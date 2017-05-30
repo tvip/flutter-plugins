@@ -11,6 +11,24 @@ Check the [`packages`](./packages) directory to see all packages.
 
 These packages are also available on [pub](https://pub.dartlang.org/flutter/packages).
 
+## Plugins
+These are the available plugins in this repository. 
+
+| Plugin |
+|--------|
+| [battery](./packages/battery/) |
+| [firebase_analytics](./packages/firebase_analytics/) |
+| [firebase_auth](./packages/firebase_auth/) |
+| [firebase_database](./packages/firebase_database/) |
+| [firebase_messaging](./packages/firebase_messaging/) |
+| [firebase_storage](./packages/firebase_storage/) |
+| [google_sign_in](./packages/google_sign_in/) |
+| [image_picker](./packages/image_picker/) |
+| [path_provider](./packages/path_provider/) |
+| [share](./packages/share/) |
+| [shared_preferences](./packages/shared_preferences/) |
+| [url_launcher](./packages/url_launcher/) |
+
 ## Issues
 
 Please file any issues, bugs, or feature requests in the [main flutter
