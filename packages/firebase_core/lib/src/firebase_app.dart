@@ -17,7 +17,7 @@ class FirebaseApp {
   final FirebaseOptions options;
 
   @visibleForTesting
-  static const MethodChannel channel = const MethodChannel(
+  static const MethodChannel channel = MethodChannel(
     'plugins.flutter.io/firebase_core',
   );
 
