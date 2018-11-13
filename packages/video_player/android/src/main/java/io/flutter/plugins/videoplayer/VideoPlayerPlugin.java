@@ -93,7 +93,7 @@ public class VideoPlayerPlugin implements MethodCallHandler {
                 true);
 
         dataSourceFactory = httpDataSourceFactory;
-        if(httpHeaders != null) {
+        if (httpHeaders != null) {
           httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
         }
       }

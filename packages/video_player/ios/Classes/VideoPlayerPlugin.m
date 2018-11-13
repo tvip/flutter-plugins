@@ -36,7 +36,8 @@ int64_t FLTCMTimeToMillis(CMTime time) { return time.value * 1000 / time.timesca
 @property(nonatomic, readonly) bool isPlaying;
 @property(nonatomic, readonly) bool isLooping;
 @property(nonatomic, readonly) bool isInitialized;
-- (instancetype)initWithURL:(NSURL*)url frameUpdater:(FLTFrameUpdater*)frameUpdater
+- (instancetype)initWithURL:(NSURL*)url
+               frameUpdater:(FLTFrameUpdater*)frameUpdater
                 httpHeaders:(NSDictionary<NSString*, NSString*>*)headers;
 - (void)play;
 - (void)pause;
@@ -56,17 +57,19 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater httpHeaders:nil];
 }
 
-- (instancetype)initWithURL:(NSURL*)url frameUpdater:(FLTFrameUpdater*)frameUpdater
-httpHeaders:(NSDictionary<NSString*, NSString*>*)headers{
+- (instancetype)initWithURL:(NSURL*)url
+               frameUpdater:(FLTFrameUpdater*)frameUpdater
+                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers {
   self = [super init];
   NSAssert(self, @"super init cannot be nil");
   _isInitialized = false;
   _isPlaying = false;
   _disposed = false;
-    
-  AVURLAsset* urlAsset = [AVURLAsset URLAssetWithURL:url options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}];
 
-  AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:urlAsset]; 
+  AVURLAsset* urlAsset =
+      [AVURLAsset URLAssetWithURL:url options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
+
+  AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:urlAsset];
   [item addObserver:self
          forKeyPath:@"loadedTimeRanges"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
@@ -346,7 +349,8 @@ httpHeaders:(NSDictionary<NSString*, NSString*>*)headers{
       dataSource = argsMap[@"uri"];
       NSDictionary<NSString*, NSString*>* httpHeaders = argsMap[@"httpHeaders"];
       player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:dataSource]
-                                      frameUpdater:frameUpdater httpHeaders: httpHeaders];
+                                      frameUpdater:frameUpdater
+                                       httpHeaders:httpHeaders];
     }
     int64_t textureId = [_registry registerTexture:player];
     frameUpdater.textureId = textureId;
