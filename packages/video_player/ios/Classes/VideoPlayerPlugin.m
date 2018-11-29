@@ -66,8 +66,8 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   _isPlaying = false;
   _disposed = false;
 
-  AVURLAsset* urlAsset =
-      [AVURLAsset URLAssetWithURL:url options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
+  AVURLAsset* urlAsset = [AVURLAsset URLAssetWithURL:url
+                                             options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
 
   AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:urlAsset];
   [item addObserver:self
