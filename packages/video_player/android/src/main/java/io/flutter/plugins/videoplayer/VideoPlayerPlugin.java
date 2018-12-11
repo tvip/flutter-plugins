@@ -18,6 +18,7 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.DefaultEventListener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
@@ -217,7 +218,14 @@ public class VideoPlayerPlugin implements MethodCallHandler {
       exoPlayer.seekTo(location);
     }
 
-    long getPosition() {
+    long getPosition()
+    {
+      Timeline timeline = exoPlayer.getCurrentTimeline();
+      if(!timeline.isEmpty()) {
+        long windowStartTimeMs = timeline.getWindow(0, new Timeline.Window()).windowStartTimeMs;
+        long pos = exoPlayer.getCurrentPosition();
+        return (windowStartTimeMs + pos);
+      }
       return exoPlayer.getCurrentPosition();
     }
 
