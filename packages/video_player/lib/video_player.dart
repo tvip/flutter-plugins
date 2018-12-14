@@ -345,7 +345,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           if (_isDisposed) {
             return;
           }
-          value = value.copyWith(position: newPosition, absolutePosition: newAbsolutePosition);
+          value = value.copyWith(
+              position: newPosition, absolutePosition: newAbsolutePosition);
         },
       );
     } else {

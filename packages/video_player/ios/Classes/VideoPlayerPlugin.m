@@ -232,8 +232,8 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   return FLTCMTimeToMillis([_player currentTime]);
 }
 
-- (int64_t) absolutePosition {
-    return FLTNSTimeIntervalToMillis([[[_player currentItem] currentDate] timeIntervalSince1970]);
+- (int64_t)absolutePosition {
+  return FLTNSTimeIntervalToMillis([[[_player currentItem] currentDate] timeIntervalSince1970]);
 }
 
 - (int64_t)duration {
