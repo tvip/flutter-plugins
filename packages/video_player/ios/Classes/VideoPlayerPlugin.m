@@ -66,11 +66,23 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   _isInitialized = false;
   _isPlaying = false;
   _disposed = false;
-
-  AVURLAsset* urlAsset = [AVURLAsset URLAssetWithURL:url
-                                             options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
-
-  AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:urlAsset];
+    
+  NSLog(@"HTTP headers: %@", headers);
+  NSLog(@"url: %@", url);
+    
+  AVPlayerItem* item;
+  if(headers != [NSNull null]) {
+    NSLog(@"creating item with asset");
+        AVURLAsset* urlAsset = [AVURLAsset URLAssetWithURL:url
+                                                   options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers,
+                                                             AVURLAssetPreferPreciseDurationAndTimingKey : @true
+                                                             }];
+    AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:urlAsset automaticallyLoadedAssetKeys: @[@"playable" , @"duration"]];
+  } else {
+    NSLog(@"Creating item with url");
+    item = [AVPlayerItem playerItemWithURL:url];
+  }
+  
   [item addObserver:self
          forKeyPath:@"loadedTimeRanges"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
@@ -91,6 +103,8 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
          forKeyPath:@"playbackBufferFull"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
             context:playbackBufferFullContext];
+    
+    NSLog(@"player item error %@ %@ %@ %@", [item error], [item accessLog], [item errorLog], [item status]);
 
   _player = [AVPlayer playerWithPlayerItem:item];
   _player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
