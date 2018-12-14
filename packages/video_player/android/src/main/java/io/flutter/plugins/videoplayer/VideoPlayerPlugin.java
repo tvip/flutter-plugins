@@ -218,8 +218,9 @@ public class VideoPlayerPlugin implements MethodCallHandler {
       exoPlayer.seekTo(location);
     }
 
-    long getPosition()
-    {
+    long getPosition() { return exoPlayer.getCurrentPosition(); }
+
+    long getAbsolutePosition() {
       Timeline timeline = exoPlayer.getCurrentTimeline();
       if(!timeline.isEmpty()) {
         long windowStartTimeMs = timeline.getWindow(0, new Timeline.Window()).windowStartTimeMs;
@@ -389,6 +390,9 @@ public class VideoPlayerPlugin implements MethodCallHandler {
         break;
       case "position":
         result.success(player.getPosition());
+        break;
+      case "absolutePosition":
+        result.success(player.getAbsolutePosition());
         break;
       case "dispose":
         player.dispose();
