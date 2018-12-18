@@ -66,23 +66,15 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   _isInitialized = false;
   _isPlaying = false;
   _disposed = false;
-    
-  NSLog(@"HTTP headers: %@", headers);
-  NSLog(@"url: %@", url);
-    
-  AVPlayerItem* item;
-  if(headers != [NSNull null]) {
-    NSLog(@"creating item with asset");
-        AVURLAsset* urlAsset = [AVURLAsset URLAssetWithURL:url
-                                                   options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers,
-                                                             AVURLAssetPreferPreciseDurationAndTimingKey : @true
-                                                             }];
-    AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:urlAsset automaticallyLoadedAssetKeys: @[@"playable" , @"duration"]];
-  } else {
-    NSLog(@"Creating item with url");
-    item = [AVPlayerItem playerItemWithURL:url];
+
+  NSDictionary<NSString*, id>* options = nil;
+  if (headers != (NSDictionary<NSString*, NSString*>*)[NSNull null]) {
+    options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
   }
-  
+
+  AVURLAsset* asset = [AVURLAsset URLAssetWithURL:url options:options];
+  AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:asset];
+
   [item addObserver:self
          forKeyPath:@"loadedTimeRanges"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
@@ -103,8 +95,6 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
          forKeyPath:@"playbackBufferFull"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
             context:playbackBufferFullContext];
-    
-    NSLog(@"player item error %@ %@ %@ %@", [item error], [item accessLog], [item errorLog], [item status]);
 
   _player = [AVPlayer playerWithPlayerItem:item];
   _player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
@@ -127,7 +117,6 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   };
   _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
 
-  AVAsset* asset = [item asset];
   void (^assetCompletionHandler)(void) = ^{
     if ([asset statusOfValueForKey:@"tracks" error:nil] == AVKeyValueStatusLoaded) {
       NSArray* tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
