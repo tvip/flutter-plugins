@@ -26,6 +26,8 @@ class FakeController extends ValueNotifier<VideoPlayerValue>
   Map<String, String> httpHeaders;
   @override
   Future<Duration> get position async => value.position;
+  @override
+  Future<DateTime> get absolutePosition async => value.absolutePosition;
 
   @override
   Future<void> seekTo(Duration moment) async {}

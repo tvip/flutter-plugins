@@ -39,7 +39,7 @@ class VideoPlayerValue {
     @required this.duration,
     this.size,
     this.position = const Duration(),
-    this.absolutePosition = const Duration(),
+    this.absolutePosition,
     this.buffered = const <DurationRange>[],
     this.isPlaying = false,
     this.isLooping = false,
@@ -62,7 +62,9 @@ class VideoPlayerValue {
   final Duration position;
 
   /// The current absolute playback position.
-  final Duration absolutePosition;
+  ///
+  /// Is null when is not available.
+  final DateTime absolutePosition;
 
   /// The currently buffered ranges.
   final List<DurationRange> buffered;
@@ -97,7 +99,7 @@ class VideoPlayerValue {
     Duration duration,
     Size size,
     Duration position,
-    Duration absolutePosition,
+    DateTime absolutePosition,
     List<DurationRange> buffered,
     bool isPlaying,
     bool isLooping,
@@ -341,7 +343,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
             return;
           }
           final Duration newPosition = await position;
-          final Duration newAbsolutePosition = await absolutePosition;
+          final DateTime newAbsolutePosition = await absolutePosition;
           if (_isDisposed) {
             return;
           }
@@ -383,16 +385,18 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// The absolute position in the current video stream
   /// (i.e. EXT-X-PROGRAM-DATE-TIME in HLS).
-  Future<Duration> get absolutePosition async {
+  Future<DateTime> get absolutePosition async {
     if (_isDisposed) {
       return null;
     }
-    return Duration(
-      milliseconds: await _channel.invokeMethod(
-        'absolutePosition',
-        <String, dynamic>{'textureId': _textureId},
-      ),
+    final int miliseconds = await _channel.invokeMethod(
+      'absolutePosition',
+      <String, dynamic>{'textureId': _textureId},
     );
+
+    if (miliseconds <= 0) return null;
+
+    return DateTime.fromMillisecondsSinceEpoch(miliseconds);
   }
 
   Future<void> seekTo(Duration moment) async {
