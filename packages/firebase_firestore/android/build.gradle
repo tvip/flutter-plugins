@@ -38,3 +38,7 @@ android {
         compile 'com.google.firebase:firebase-core:11.4.+'
     }
 }
+
+dependencies {
+    implementation 'com.android.billingclient:billing:1.2'
+}
