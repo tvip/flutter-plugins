@@ -41,10 +41,12 @@ class FaceDetector extends FirebaseVisionDetector {
   /// Detects faces in the input image.
   @override
   Future<List<Face>> detectInImage(FirebaseVisionImage visionImage) async {
+    // TODO(amirh): remove this on when the invokeMethod update makes it to stable Flutter.
+    // https://github.com/flutter/flutter/issues/26431
+    // ignore: strong_mode_implicit_dynamic_method
     final List<dynamic> reply = await FirebaseVision.channel.invokeMethod(
       'FaceDetector#detectInImage',
       <String, dynamic>{
-        'path': visionImage.imageFile.path,
         'options': <String, dynamic>{
           'enableClassification': options.enableClassification,
           'enableLandmarks': options.enableLandmarks,
@@ -52,7 +54,7 @@ class FaceDetector extends FirebaseVisionDetector {
           'minFaceSize': options.minFaceSize,
           'mode': _enumToString(options.mode),
         },
-      },
+      }..addAll(visionImage._serialize()),
     );
 
     final List<Face> faces = <Face>[];

@@ -20,40 +20,95 @@ class WebViewExample extends StatelessWidget {
         // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
         actions: <Widget>[
           NavigationControls(_controller.future),
-          const SampleMenu(),
+          SampleMenu(_controller.future),
         ],
       ),
       body: WebView(
         initialUrl: 'https://flutter.io',
-        javaScriptMode: JavaScriptMode.unrestricted,
+        javascriptMode: JavascriptMode.unrestricted,
         onWebViewCreated: (WebViewController webViewController) {
           _controller.complete(webViewController);
         },
       ),
+      floatingActionButton: favoriteButton(),
     );
+  }
+
+  Widget favoriteButton() {
+    return FutureBuilder<WebViewController>(
+        future: _controller.future,
+        builder: (BuildContext context,
+            AsyncSnapshot<WebViewController> controller) {
+          if (controller.hasData) {
+            return FloatingActionButton(
+              onPressed: () async {
+                final String url = await controller.data.currentUrl();
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(content: Text("Favorited $url")),
+                );
+              },
+              child: const Icon(Icons.favorite),
+            );
+          }
+          return Container();
+        });
   }
 }
 
+enum MenuOptions {
+  evaluateJavascript,
+  toast,
+}
+
 class SampleMenu extends StatelessWidget {
-  const SampleMenu();
+  SampleMenu(this.controller);
+  final Future<WebViewController> controller;
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      onSelected: (String value) {
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text('You selected: $value')));
+    return FutureBuilder<WebViewController>(
+      future: controller,
+      builder:
+          (BuildContext context, AsyncSnapshot<WebViewController> controller) {
+        return PopupMenuButton<MenuOptions>(
+          onSelected: (MenuOptions value) {
+            switch (value) {
+              case MenuOptions.evaluateJavascript:
+                _onEvaluateJavascript(controller.data, context);
+                break;
+              case MenuOptions.toast:
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('You selected: $value'),
+                  ),
+                );
+                break;
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuItem<MenuOptions>>[
+                PopupMenuItem<MenuOptions>(
+                  value: MenuOptions.evaluateJavascript,
+                  child: const Text('Evaluate JavaScript'),
+                  enabled: controller.hasData,
+                ),
+                const PopupMenuItem<MenuOptions>(
+                  value: MenuOptions.toast,
+                  child: Text('Make a toast'),
+                ),
+              ],
+        );
       },
-      itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
-            const PopupMenuItem<String>(
-              value: 'Item 1',
-              child: Text('Item 1'),
-            ),
-            const PopupMenuItem<String>(
-              value: 'Item 2',
-              child: Text('Item 2'),
-            ),
-          ],
+    );
+  }
+
+  void _onEvaluateJavascript(
+      WebViewController controller, BuildContext context) async {
+    final String result = await controller
+        .evaluateJavascript("document.body.style.backgroundColor = 'red'");
+    Scaffold.of(context).showSnackBar(
+      SnackBar(
+        content: Text('JavaScript evaluated, the result is: $result'),
+      ),
     );
   }
 }
@@ -104,6 +159,14 @@ class NavigationControls extends StatelessWidget {
                         );
                         return;
                       }
+                    },
+            ),
+            IconButton(
+              icon: const Icon(Icons.replay),
+              onPressed: !webViewReady
+                  ? null
+                  : () {
+                      controller.reload();
                     },
             ),
           ],

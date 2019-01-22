@@ -32,6 +32,7 @@
   WKWebView* _webView;
   int64_t _viewId;
   FlutterMethodChannel* _channel;
+  NSString* _currentUrl;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -50,7 +51,7 @@
     NSDictionary<NSString*, id>* settings = args[@"settings"];
     [self applySettings:settings];
     NSString* initialUrl = args[@"initialUrl"];
-    if (initialUrl && initialUrl != [NSNull null]) {
+    if (initialUrl && ![initialUrl isKindOfClass:[NSNull class]]) {
       [self loadUrl:initialUrl];
     }
   }
@@ -74,6 +75,12 @@
     [self onGoBack:call result:result];
   } else if ([[call method] isEqualToString:@"goForward"]) {
     [self onGoForward:call result:result];
+  } else if ([[call method] isEqualToString:@"reload"]) {
+    [self onReload:call result:result];
+  } else if ([[call method] isEqualToString:@"currentUrl"]) {
+    [self onCurrentUrl:call result:result];
+  } else if ([[call method] isEqualToString:@"evaluateJavascript"]) {
+    [self onEvaluateJavaScript:call result:result];
   } else {
     result(FlutterMethodNotImplemented);
   }
@@ -115,6 +122,38 @@
   result(nil);
 }
 
+- (void)onReload:(FlutterMethodCall*)call result:(FlutterResult)result {
+  [_webView reload];
+  result(nil);
+}
+
+- (void)onCurrentUrl:(FlutterMethodCall*)call result:(FlutterResult)result {
+  _currentUrl = [[_webView URL] absoluteString];
+  result(_currentUrl);
+}
+
+- (void)onEvaluateJavaScript:(FlutterMethodCall*)call result:(FlutterResult)result {
+  NSString* jsString = [call arguments];
+  if (!jsString) {
+    result([FlutterError errorWithCode:@"evaluateJavaScript_failed"
+                               message:@"JavaScript String cannot be null"
+                               details:nil]);
+    return;
+  }
+  [_webView evaluateJavaScript:jsString
+             completionHandler:^(_Nullable id evaluateResult, NSError* _Nullable error) {
+               if (error) {
+                 result([FlutterError
+                     errorWithCode:@"evaluateJavaScript_failed"
+                           message:@"Failed evaluating JavaScript"
+                           details:[NSString stringWithFormat:@"JavaScript string was: '%@'\n%@",
+                                                              jsString, error]]);
+               } else {
+                 result([NSString stringWithFormat:@"%@", evaluateResult]);
+               }
+             }];
+}
+
 - (void)applySettings:(NSDictionary<NSString*, id>*)settings {
   for (NSString* key in settings) {
     if ([key isEqualToString:@"jsMode"]) {
@@ -136,7 +175,7 @@
       [preferences setJavaScriptEnabled:YES];
       break;
     default:
-      NSLog(@"webview_flutter: unknown javascript mode: %@", mode);
+      NSLog(@"webview_flutter: unknown JavaScript mode: %@", mode);
   }
 }
 

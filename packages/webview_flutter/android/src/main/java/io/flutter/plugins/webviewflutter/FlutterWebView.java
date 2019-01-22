@@ -53,6 +53,15 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
       case "goForward":
         goForward(methodCall, result);
         break;
+      case "reload":
+        reload(methodCall, result);
+        break;
+      case "currentUrl":
+        currentUrl(methodCall, result);
+        break;
+      case "evaluateJavascript":
+        evaluateJavaScript(methodCall, result);
+        break;
       default:
         result.notImplemented();
     }
@@ -86,10 +95,34 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
     result.success(null);
   }
 
+  private void reload(MethodCall methodCall, Result result) {
+    webView.reload();
+    result.success(null);
+  }
+
+  private void currentUrl(MethodCall methodCall, Result result) {
+    result.success(webView.getUrl());
+  }
+
   @SuppressWarnings("unchecked")
   private void updateSettings(MethodCall methodCall, Result result) {
     applySettings((Map<String, Object>) methodCall.arguments);
     result.success(null);
+  }
+
+  private void evaluateJavaScript(MethodCall methodCall, final Result result) {
+    String jsString = (String) methodCall.arguments;
+    if (jsString == null) {
+      throw new UnsupportedOperationException("JavaScript string cannot be null");
+    }
+    webView.evaluateJavascript(
+        jsString,
+        new android.webkit.ValueCallback<String>() {
+          @Override
+          public void onReceiveValue(String value) {
+            result.success(value);
+          }
+        });
   }
 
   private void applySettings(Map<String, Object> settings) {
@@ -109,11 +142,11 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
       case 0: // disabled
         webView.getSettings().setJavaScriptEnabled(false);
         break;
-      case 1: //unrestricted
+      case 1: // unrestricted
         webView.getSettings().setJavaScriptEnabled(true);
         break;
       default:
-        throw new IllegalArgumentException("Trying to set unknown Javascript mode: " + mode);
+        throw new IllegalArgumentException("Trying to set unknown JavaScript mode: " + mode);
     }
   }
 

@@ -1,3 +1,20 @@
+## 0.2.9+1
+
+* Fix a crash when failing to start preview.
+
+## 0.2.9
+
+* Save photo orientation data on iOS.
+
+## 0.2.8
+
+* Add access to the image stream from Dart.
+* Use `cameraController.startImageStream(listener)` to process the images.
+
+## 0.2.7
+
+* Fix issue with crash when the physical device's orientation is unknown.
+
 ## 0.2.6
 
 * Update the camera to use the physical device's orientation instead of the UI
