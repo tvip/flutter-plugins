@@ -15,6 +15,7 @@ import android.view.Surface;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.DefaultEventListener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -232,6 +233,21 @@ public class VideoPlayerPlugin implements MethodCallHandler {
       return exoPlayer.getCurrentPosition();
     }
 
+    double getDisplayAspectRatio(Format videoFormat) {
+      double aspectRatio = 1.0;
+
+      if (videoFormat == null) return aspectRatio;
+
+      aspectRatio = videoFormat.pixelWidthHeightRatio;
+      int width = videoFormat.width;
+      int height = videoFormat.height;
+      if (height != 0 && width != 0) {
+        aspectRatio *= (double) width / height;
+      }
+
+      return aspectRatio;
+    }
+
     private void sendInitialized() {
       if (isInitialized) {
         Map<String, Object> event = new HashMap<>();
@@ -240,6 +256,7 @@ public class VideoPlayerPlugin implements MethodCallHandler {
         if (exoPlayer.getVideoFormat() != null) {
           event.put("width", exoPlayer.getVideoFormat().width);
           event.put("height", exoPlayer.getVideoFormat().height);
+          event.put("aspectRatio", getDisplayAspectRatio(exoPlayer.getVideoFormat()));
         }
         eventSink.success(event);
       }

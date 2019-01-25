@@ -197,6 +197,38 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
   }
 }
 
+- (double)getDisplayAspectRatioForItem:(AVPlayerItem*)item {
+  double aspectRatio = 1.0;
+
+  for (AVPlayerItemTrack* itemTrack in [item tracks]) {
+    AVAssetTrack* assetTrack = [itemTrack assetTrack];
+    if ([[assetTrack mediaType] isEqualToString:AVMediaTypeVideo]) {
+      NSArray* formatDescriptions = [assetTrack formatDescriptions];
+      if ([formatDescriptions count] > 0) {
+        CMFormatDescriptionRef formatDescription =
+            (__bridge CMFormatDescriptionRef)[formatDescriptions objectAtIndex:0];
+        CFDictionaryRef pixelAspectRatioRef = CMFormatDescriptionGetExtension(
+            formatDescription, kCMFormatDescriptionExtension_PixelAspectRatio);
+        if (pixelAspectRatioRef) {
+          NSDictionary* pixelAspectRatioDict = (__bridge NSDictionary*)pixelAspectRatioRef;
+          double w = [[pixelAspectRatioDict objectForKey:@"HorizontalSpacing"] doubleValue];
+          double h = [[pixelAspectRatioDict objectForKey:@"VerticalSpacing"] doubleValue];
+          double nw = [assetTrack naturalSize].width;
+          double nh = [assetTrack naturalSize].height;
+          if (w != 0 && h != 0 && nw != 0 && nh != 0) {
+            double par = w / h;
+            double dar = par * nw / nh;
+            aspectRatio = dar;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return aspectRatio;
+}
+
 - (void)updatePlayingState {
   if (!_isInitialized) {
     return;
@@ -212,11 +244,13 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
 - (void)sendInitialized {
   if (_eventSink && _isInitialized) {
     CGSize size = [self.player currentItem].presentationSize;
+    double dar = [self getDisplayAspectRatioForItem:[self.player currentItem]];
     _eventSink(@{
       @"event" : @"initialized",
       @"duration" : @([self duration]),
       @"width" : @(size.width),
       @"height" : @(size.height),
+      @"aspectRatio" : @(dar),
     });
   }
 }
