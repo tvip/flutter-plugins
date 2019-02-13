@@ -1,3 +1,24 @@
+## 0.5.0+3
+
+* Fixed am Android crash when Image Picker is registered without an activity.
+
+## 0.5.0+2
+
+* Log a more detailed warning at build time about the previous AndroidX
+  migration.
+
+## 0.5.0+1
+
+* Fix a crash when user calls the plugin in quick succession on Android.
+
+## 0.5.0
+
+* **Breaking change**. Migrate from the deprecated original Android Support
+  Library to AndroidX. This shouldn't result in any functional changes, but it
+  requires any Android apps using this plugin to [also
+  migrate](https://developer.android.com/jetpack/androidx/migrate) if they're
+  using the original support library.
+
 ## 0.4.12+1
 
 * Fix a crash when selecting downloaded images from image picker on certain devices.

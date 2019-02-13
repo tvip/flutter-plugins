@@ -53,6 +53,8 @@ import java.util.Map;
 
 public class VideoPlayerPlugin implements MethodCallHandler {
 
+  private static final String TAG = "VideoPlayerPlugin";
+
   private static class VideoPlayer {
 
     private SimpleExoPlayer exoPlayer;
@@ -253,9 +255,19 @@ public class VideoPlayerPlugin implements MethodCallHandler {
         Map<String, Object> event = new HashMap<>();
         event.put("event", "initialized");
         event.put("duration", exoPlayer.getDuration());
+
         if (exoPlayer.getVideoFormat() != null) {
-          event.put("width", exoPlayer.getVideoFormat().width);
-          event.put("height", exoPlayer.getVideoFormat().height);
+          Format videoFormat = exoPlayer.getVideoFormat();
+          int width = videoFormat.width;
+          int height = videoFormat.height;
+          int rotationDegrees = videoFormat.rotationDegrees;
+          // Switch the width/height if video was taken in portrait mode
+          if (rotationDegrees == 90 || rotationDegrees == 270) {
+            width = exoPlayer.getVideoFormat().height;
+            height = exoPlayer.getVideoFormat().width;
+          }
+          event.put("width", width);
+          event.put("height", height);
           event.put("aspectRatio", getDisplayAspectRatio(exoPlayer.getVideoFormat()));
         }
         eventSink.success(event);
