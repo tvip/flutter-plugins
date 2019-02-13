@@ -281,7 +281,8 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
 }
 
 - (double)getDisplayAspectRatioForItem:(AVPlayerItem*)item {
-  double aspectRatio = 1.0;
+  CGSize presentationSize = [item presentationSize];
+  double aspectRatio = presentationSize.width / presentationSize.height;
 
   for (AVPlayerItemTrack* itemTrack in [item tracks]) {
     AVAssetTrack* assetTrack = [itemTrack assetTrack];
@@ -338,16 +339,16 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 - (void)sendInitialized {
   if (_eventSink && _isInitialized) {
     CGSize size = [self.player currentItem].presentationSize;
-    double dar = [self getDisplayAspectRatioForItem:[self.player currentItem]];
     CGFloat width = size.width;
     CGFloat height = size.height;
+    double dar = [self getDisplayAspectRatioForItem:[self.player currentItem]];
 
     _eventSink(@{
       @"event" : @"initialized",
       @"duration" : @([self duration]),
-      @"aspectRatio" : @(dar),
       @"width" : @(width),
-      @"height" : @(height)
+      @"height" : @(height),
+      @"aspectRatio" : @(dar)
     });
   }
 }
