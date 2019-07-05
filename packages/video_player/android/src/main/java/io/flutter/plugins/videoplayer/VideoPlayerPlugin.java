@@ -88,9 +88,20 @@ public class VideoPlayerPlugin implements MethodCallHandler {
       if (uri.getScheme().equals("asset") || uri.getScheme().equals("file")) {
         dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
       } else {
+
+        String userAgentValue = null;
+
+        if (httpHeaders != null) {
+          for (Map.Entry<String, String> entry : httpHeaders.entrySet()) {
+            if (entry.getKey().toLowerCase().equals("user-agent")) {
+              userAgentValue = entry.getValue();
+            }
+          }
+        }
+
         DefaultHttpDataSourceFactory httpDataSourceFactory =
             new DefaultHttpDataSourceFactory(
-                "ExoPlayer",
+                userAgentValue == null ? "ExoPlayer" : userAgentValue,
                 null,
                 DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
