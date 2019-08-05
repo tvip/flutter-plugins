@@ -11,6 +11,7 @@
 .uuid
 
 pubspec.lock
+flutter_export_environment.sh
 
 Podfile.lock
 Pods/
