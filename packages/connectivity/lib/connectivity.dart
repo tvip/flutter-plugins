@@ -13,6 +13,9 @@ enum ConnectivityResult {
   /// WiFi: Device connected via Wi-Fi
   wifi,
 
+  /// Ethernet: Device connected via ethernet
+  ethernet,
+
   /// Mobile: Device connected to cellular network
   mobile,
 
@@ -225,6 +228,8 @@ class Connectivity {
 
 ConnectivityResult _parseConnectivityResult(String state) {
   switch (state) {
+    case 'ethernet':
+      return ConnectivityResult.ethernet;
     case 'wifi':
       return ConnectivityResult.wifi;
     case 'mobile':
