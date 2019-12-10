@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "VideoPlayerPlugin.h"
+#import "FLTVideoPlayerPlugin.h"
 #import <AVFoundation/AVFoundation.h>
 
 int64_t CMTimeToMillis(CMTime time) { return time.value * 1000 / time.timescale; }
