@@ -4,6 +4,9 @@
 
 package io.flutter.plugins.videoplayer;
 
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.Format;
+
 import android.content.Context;
 import android.os.Build;
 import android.util.LongSparseArray;
@@ -24,6 +27,8 @@ import io.flutter.view.TextureRegistry;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import javax.net.ssl.HttpsURLConnection;
+
+import java.util.Map;
 
 /** Android platform implementation of the VideoPlayerPlugin. */
 public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
@@ -140,12 +145,16 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               null,
               options);
     } else {
+      @SuppressWarnings("unchecked")
+      Map<String, String> httpHeaders = call.argument("httpHeaders");
+
       player =
           new VideoPlayer(
               flutterState.applicationContext,
               eventChannel,
               handle,
               arg.getUri(),
+              arg.getHttpHeaders(),
               arg.getFormatHint(),
               options);
     }

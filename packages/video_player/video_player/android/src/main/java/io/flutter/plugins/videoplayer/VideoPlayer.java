@@ -3,6 +3,10 @@ package io.flutter.plugins.videoplayer;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_ALL;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
 
+
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.Format;
+
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
@@ -61,6 +65,7 @@ final class VideoPlayer {
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
       String dataSource,
+      Map<String, String> httpHeaders,
       String formatHint,
       VideoPlayerOptions options) {
     this.eventChannel = eventChannel;
@@ -73,13 +78,30 @@ final class VideoPlayer {
 
     DataSource.Factory dataSourceFactory;
     if (isHTTP(uri)) {
-      dataSourceFactory =
+
+
+        String userAgentValue = null;
+
+        if (httpHeaders != null) {
+            for (Map.Entry<String, String> entry : httpHeaders.entrySet()) {
+                if (entry.getKey().toLowerCase().equals("user-agent")) {
+                    userAgentValue = entry.getValue();
+                }
+            }
+        }
+
+        DefaultHttpDataSourceFactory httpDataSourceFactory =
           new DefaultHttpDataSourceFactory(
-              "ExoPlayer",
+              userAgentValue == null ? "ExoPlayer" : userAgentValue,
               null,
               DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
               DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
               true);
+
+        dataSourceFactory = httpDataSourceFactory;
+        if (httpHeaders != null) {
+            httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
+        }
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
     }
@@ -246,6 +268,16 @@ final class VideoPlayer {
   long getPosition() {
     return exoPlayer.getCurrentPosition();
   }
+
+    long getAbsolutePosition() {
+        Timeline timeline = exoPlayer.getCurrentTimeline();
+        if (!timeline.isEmpty()) {
+            long windowStartTimeMs = timeline.getWindow(0, new Timeline.Window()).windowStartTimeMs;
+            long pos = exoPlayer.getCurrentPosition();
+            return (windowStartTimeMs + pos);
+        }
+        return exoPlayer.getCurrentPosition();
+    }
 
   @SuppressWarnings("SuspiciousNameCombination")
   private void sendInitialized() {
