@@ -4,6 +4,9 @@
 
 package io.flutter.plugins.videoplayer;
 
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.Format;
+
 import android.content.Context;
 import android.util.Log;
 import android.util.LongSparseArray;
@@ -17,6 +20,8 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.view.FlutterMain;
 import io.flutter.view.TextureRegistry;
+
+import java.util.Map;
 
 /** Android platform implementation of the VideoPlayerPlugin. */
 public class VideoPlayerPlugin implements MethodCallHandler, FlutterPlugin {
@@ -119,16 +124,20 @@ public class VideoPlayerPlugin implements MethodCallHandler, FlutterPlugin {
                     eventChannel,
                     handle,
                     "asset:///" + assetLookupKey,
+                    null,
                     result,
                     null);
             videoPlayers.put(handle.id(), player);
           } else {
+            @SuppressWarnings("unchecked")
+            Map<String, String> httpHeaders = call.argument("httpHeaders");
             player =
                 new VideoPlayer(
                     flutterState.applicationContext,
                     eventChannel,
                     handle,
                     call.argument("uri"),
+                    httpHeaders,
                     result,
                     call.argument("formatHint"));
             videoPlayers.put(handle.id(), player);
@@ -177,6 +186,10 @@ public class VideoPlayerPlugin implements MethodCallHandler, FlutterPlugin {
         break;
       case "position":
         result.success(player.getPosition());
+        player.sendBufferingUpdate();
+        break;
+      case "absolutePosition":
+        result.success(player.getAbsolutePosition());
         player.sendBufferingUpdate();
         break;
       case "dispose":

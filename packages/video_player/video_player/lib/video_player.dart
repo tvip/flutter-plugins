@@ -31,6 +31,7 @@ class VideoPlayerValue {
     @required this.duration,
     this.size,
     this.position = const Duration(),
+    this.absolutePosition,
     this.caption = const Caption(),
     this.buffered = const <DurationRange>[],
     this.isPlaying = false,
@@ -55,6 +56,11 @@ class VideoPlayerValue {
 
   /// The current playback position.
   final Duration position;
+
+  /// The current absolute playback position.
+  ///
+  /// Is null when is not available.
+  final DateTime absolutePosition;
 
   /// The [Caption] that should be displayed based on the current [position].
   ///
@@ -113,6 +119,7 @@ class VideoPlayerValue {
     Duration duration,
     Size size,
     Duration position,
+    DateTime absolutePosition,
     Caption caption,
     List<DurationRange> buffered,
     bool isPlaying,
@@ -125,6 +132,7 @@ class VideoPlayerValue {
       duration: duration ?? this.duration,
       size: size ?? this.size,
       position: position ?? this.position,
+      absolutePosition: absolutePosition ?? this.absolutePosition,
       caption: caption ?? this.caption,
       buffered: buffered ?? this.buffered,
       isPlaying: isPlaying ?? this.isPlaying,
@@ -141,6 +149,7 @@ class VideoPlayerValue {
         'duration: $duration, '
         'size: $size, '
         'position: $position, '
+        'absolutePosition: $absolutePosition, '
         'caption: $caption, '
         'buffered: [${buffered.join(', ')}], '
         'isPlaying: $isPlaying, '
@@ -171,6 +180,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       {this.package, this.closedCaptionFile})
       : dataSourceType = DataSourceType.asset,
         formatHint = null,
+        httpHeaders = null,
         super(VideoPlayerValue(duration: null));
 
   /// Constructs a [VideoPlayerController] playing a video from obtained from
@@ -181,7 +191,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// **Android only**: The [formatHint] option allows the caller to override
   /// the video format detection code.
   VideoPlayerController.network(this.dataSource,
-      {this.formatHint, this.closedCaptionFile})
+      {this.formatHint, this.httpHeaders, this.closedCaptionFile})
       : dataSourceType = DataSourceType.network,
         package = null,
         super(VideoPlayerValue(duration: null));
@@ -194,6 +204,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       : dataSource = 'file://${file.path}',
         dataSourceType = DataSourceType.file,
         package = null,
+        httpHeaders = null,
         formatHint = null,
         super(VideoPlayerValue(duration: null));
 
@@ -213,6 +224,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Only set for [asset] videos. The package that the asset was loaded from.
   final String package;
+
+
+  final Map<String, String> httpHeaders;
 
   /// Optional field to specify a file containing the closed
   /// captioning.
@@ -253,6 +267,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           sourceType: DataSourceType.network,
           uri: dataSource,
           formatHint: formatHint,
+            httpHeaders: httpHeaders
         );
         break;
       case DataSourceType.file:
@@ -381,10 +396,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
             return;
           }
           final Duration newPosition = await position;
+          final DateTime newAbsolutePosition = await absolutePosition;
           if (_isDisposed) {
             return;
           }
-          _updatePosition(newPosition);
+          _updatePosition(position: newPosition, absolutePosition: newAbsolutePosition);
         },
       );
     } else {
@@ -408,6 +424,19 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     return await _videoPlayerPlatform.getPosition(_textureId);
   }
 
+  /// The absolute position in the current video stream
+  /// (i.e. EXT-X-PROGRAM-DATE-TIME in HLS).
+  Future<DateTime> get absolutePosition async {
+    if (_isDisposed) {
+      return null;
+    }
+    final int milliseconds = await _videoPlayerPlatform.getAbsolutePosition(_textureId);
+
+    if (milliseconds <= 0) return null;
+
+    return DateTime.fromMillisecondsSinceEpoch(milliseconds);
+  }
+
   /// Sets the video's current timestamp to be at [moment]. The next
   /// time the video is played it will resume from the given [moment].
   ///
@@ -423,7 +452,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       position = const Duration();
     }
     await _videoPlayerPlatform.seekTo(_textureId, position);
-    _updatePosition(position);
+    _updatePosition(position: position);
   }
 
   /// Sets the audio volume of [this].
@@ -457,8 +486,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     return Caption();
   }
 
-  void _updatePosition(Duration position) {
-    value = value.copyWith(position: position);
+  void _updatePosition({@required Duration position, DateTime absolutePosition}) {
+    value = value.copyWith(position: position, absolutePosition: absolutePosition);
     value = value.copyWith(caption: _getCaptionAt(position));
   }
 }

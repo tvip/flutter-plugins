@@ -105,6 +105,11 @@ abstract class VideoPlayerPlatform {
     throw UnimplementedError('getPosition() has not been implemented.');
   }
 
+  /// Gets the video position as milliseconds from the start.
+  Future<int> getAbsolutePosition(int textureId) {
+    throw UnimplementedError('getAbsolutePosition() has not been implemented.');
+  }
+
   /// Returns a widget displaying the video with a given textureID.
   Widget buildView(int textureId) {
     throw UnimplementedError('buildView() has not been implemented.');
@@ -139,6 +144,7 @@ class DataSource {
     @required this.sourceType,
     this.uri,
     this.formatHint,
+    this.httpHeaders,
     this.asset,
     this.package,
   });
@@ -154,6 +160,7 @@ class DataSource {
   /// This will be in different formats depending on the [DataSourceType] of
   /// the original video.
   final String uri;
+  final Map<String, String> httpHeaders;
 
   /// **Android only**. Will override the platform's generic file format
   /// detection with whatever is set here.

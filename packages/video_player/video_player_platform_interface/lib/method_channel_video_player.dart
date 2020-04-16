@@ -41,6 +41,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
       case DataSourceType.network:
         dataSourceDescription = <String, dynamic>{
           'uri': dataSource.uri,
+          'httpHeaders': dataSource.httpHeaders,
           'formatHint': _videoFormatStringMap[dataSource.formatHint]
         };
         break;
@@ -113,6 +114,14 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
         'position',
         <String, dynamic>{'textureId': textureId},
       ),
+    );
+  }
+
+  @override
+  Future<int> getAbsolutePosition(int textureId) async {
+    return await _channel.invokeMethod<int>(
+      'absolutePosition',
+      <String, dynamic>{'textureId': textureId},
     );
   }
 
