@@ -272,9 +272,4 @@ class GoogleMapController {
   void dispose() {
     GoogleMapsFlutterPlatform.instance.dispose(mapId: mapId);
   }
-
-  /// Returns the image bytes of the map
-  Future<Uint8List> takeSnapshot() async {
-    return await channel.invokeMethod<Uint8List>('map#takeSnapshot');
-  }
 }

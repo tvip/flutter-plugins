@@ -4,8 +4,6 @@
 
 import 'package:flutter/foundation.dart';
 
-import 'package:flutter/foundation.dart';
-
 /// Options used to create a camera with the given
 /// [audio] and [video] media constraints.
 ///

@@ -1,12 +1,4 @@
-## 0.8.4
-
-* Adds an endorsed macOS implementation.
-
-## 0.8.3
-
-* Adds an endorsed Windows implementation.
-
-## 0.8.2+1
+## NEXT
 
 * Updates minimum supported SDK version to Flutter 3.10/Dart 3.0.
 

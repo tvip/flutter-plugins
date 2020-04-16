@@ -4,7 +4,6 @@
 
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import '../utils/utils.dart';
 

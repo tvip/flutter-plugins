@@ -43,6 +43,12 @@ class PositionMessage {
   int position;
 }
 
+class AbsolutePositionMessage {
+  AbsolutePositionMessage(this.textureId, this.absolutePosition);
+  int textureId;
+  int? absolutePosition;
+}
+
 class CreateMessage {
   CreateMessage({required this.httpHeaders});
   String? asset;
@@ -75,6 +81,8 @@ abstract class AVFoundationVideoPlayerApi {
   void play(TextureMessage msg);
   @ObjCSelector('position:')
   PositionMessage position(TextureMessage msg);
+  @ObjCSelector('absolutePosition:')
+  AbsolutePositionMessage absolutePosition(TextureMessage msg);
   @async
   @ObjCSelector('seekTo:')
   void seekTo(PositionMessage msg);

@@ -86,6 +86,11 @@ class _ApiLogger implements TestHostVideoPlayerApi {
     log.add('setPlaybackSpeed');
     playbackSpeedMessage = arg;
   }
+
+  @override
+  AbsolutePositionMessage absolutePosition(TextureMessage msg) {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

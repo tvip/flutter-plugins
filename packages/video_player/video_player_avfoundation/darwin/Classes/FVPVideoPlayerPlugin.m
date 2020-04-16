@@ -16,6 +16,10 @@
 #error Code Requires ARC.
 #endif
 
+int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) {
+  return (int64_t)(interval * 1000.0);
+}
+
 @interface FVPFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
 @property(nonatomic, weak, readonly) NSObject<FlutterTextureRegistry> *registry;
@@ -386,6 +390,10 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
       [self updatePlayingState];
     }
   } else if (context == playbackLikelyToKeepUpContext) {
+    if (!_isInitialized) {
+      // _isInitialized = true;
+      // [self sendInitialized];
+    }
     [self updatePlayingState];
     if ([[_player currentItem] isPlaybackLikelyToKeepUp]) {
       if (_eventSink != nil) {
@@ -454,15 +462,15 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
       return;
     }
     // The player may be initialized but still needs to determine the duration.
-    int64_t duration = [self duration];
-    if (duration == 0) {
-      return;
-    }
+    // FIXME: this not work for HLS live stream
+    //if ([self duration] == 0) {
+    //  return;
+    //}
 
     _isInitialized = YES;
     _eventSink(@{
       @"event" : @"initialized",
-      @"duration" : @(duration),
+      @"duration" : @([self duration]),
       @"width" : @(width),
       @"height" : @(height)
     });
@@ -481,6 +489,10 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 
 - (int64_t)position {
   return FVPCMTimeToMillis([_player currentTime]);
+}
+
+- (int64_t)absolutePosition {
+  return FLTNSTimeIntervalToMillis([[[_player currentItem] currentDate] timeIntervalSince1970]);
 }
 
 - (int64_t)duration {
@@ -816,6 +828,13 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   FVPVideoPlayer *player = self.playersByTextureId[@(input.textureId)];
   FVPPositionMessage *result = [FVPPositionMessage makeWithTextureId:input.textureId
                                                             position:[player position]];
+  return result;
+}
+
+- (FVPAbsolutePositionMessage*)absolutePosition:(FVPTextureMessage*)input error:(FlutterError**)error {
+  FVPVideoPlayer *player = self.playersByTextureId[@(input.textureId)];
+  FVPAbsolutePositionMessage *result = [FVPAbsolutePositionMessage makeWithTextureId:input.textureId
+                                                            absolutePosition:@([player absolutePosition])];
   return result;
 }
 

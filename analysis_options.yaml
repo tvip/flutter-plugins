@@ -17,7 +17,6 @@ analyzer:
     # Ignore generated files
     - '**/*.g.dart'
     - '**/*.mocks.dart' # Mockito @GenerateMocks
-    - '**/*.pigeon.dart' # Pigeon generated file
 
 linter:
   rules:

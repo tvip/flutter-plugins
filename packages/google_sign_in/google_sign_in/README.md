@@ -6,10 +6,6 @@ A Flutter plugin for [Google Sign In](https://developers.google.com/identity/).
 |-------------|---------|-------|--------|-----|
 | **Support** | SDK 16+ | 11.0+ | 10.15+ | Any |
 
-|             | Android | iOS    | Web |
-|-------------|---------|--------|-----|
-| **Support** | SDK 16+ | iOS 9+ | Any |
-
 ## Platform integration
 
 ### Android integration

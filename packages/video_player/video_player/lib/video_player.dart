@@ -41,6 +41,7 @@ class VideoPlayerValue {
     required this.duration,
     this.size = Size.zero,
     this.position = Duration.zero,
+    this.absolutePosition,
     this.caption = Caption.none,
     this.captionOffset = Duration.zero,
     this.buffered = const <DurationRange>[],
@@ -77,6 +78,11 @@ class VideoPlayerValue {
 
   /// The current playback position.
   final Duration position;
+
+  /// The current absolute playback position.
+  ///
+  /// Is null when is not available.
+  final DateTime? absolutePosition;
 
   /// The [Caption] that should be displayed based on the current [position].
   ///
@@ -154,6 +160,7 @@ class VideoPlayerValue {
     Duration? duration,
     Size? size,
     Duration? position,
+    DateTime? absolutePosition,
     Caption? caption,
     Duration? captionOffset,
     List<DurationRange>? buffered,
@@ -171,6 +178,7 @@ class VideoPlayerValue {
       duration: duration ?? this.duration,
       size: size ?? this.size,
       position: position ?? this.position,
+      absolutePosition: absolutePosition ?? this.absolutePosition,
       caption: caption ?? this.caption,
       captionOffset: captionOffset ?? this.captionOffset,
       buffered: buffered ?? this.buffered,
@@ -194,6 +202,7 @@ class VideoPlayerValue {
         'duration: $duration, '
         'size: $size, '
         'position: $position, '
+        'absolutePosition: $absolutePosition, '
         'caption: $caption, '
         'captionOffset: $captionOffset, '
         'buffered: [${buffered.join(', ')}], '
@@ -214,6 +223,7 @@ class VideoPlayerValue {
           runtimeType == other.runtimeType &&
           duration == other.duration &&
           position == other.position &&
+          absolutePosition == other.absolutePosition &&
           caption == other.caption &&
           captionOffset == other.captionOffset &&
           listEquals(buffered, other.buffered) &&
@@ -232,6 +242,7 @@ class VideoPlayerValue {
   int get hashCode => Object.hash(
         duration,
         position,
+        absolutePosition,
         caption,
         captionOffset,
         buffered,
@@ -451,7 +462,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
             duration: event.duration,
             size: event.size,
             rotationCorrection: event.rotationCorrection,
-            isInitialized: event.duration != null,
+            isInitialized: true,
             errorDescription: null,
             isCompleted: false,
           );
@@ -580,10 +591,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
             return;
           }
           final Duration? newPosition = await position;
+          final DateTime? newAbsolutePosition = await absolutePosition;
           if (newPosition == null) {
             return;
           }
-          _updatePosition(newPosition);
+          _updatePosition(newPosition, newAbsolutePosition);
         },
       );
 
@@ -628,6 +640,20 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       return null;
     }
     return _videoPlayerPlatform.getPosition(_textureId);
+  }
+
+  /// The absolute position in the current video stream
+  /// (i.e. EXT-X-PROGRAM-DATE-TIME in HLS).
+  Future<DateTime?> get absolutePosition async {
+    if (_isDisposed) {
+      return null;
+    }
+    final int? milliseconds =
+        await _videoPlayerPlatform.getAbsolutePosition(_textureId);
+
+    if (milliseconds == null || milliseconds <= 0) return null;
+
+    return DateTime.fromMillisecondsSinceEpoch(milliseconds);
   }
 
   /// Sets the video's current timestamp to be at [moment]. The next
@@ -752,9 +778,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     value = value.copyWith(caption: _getCaptionAt(value.position));
   }
 
-  void _updatePosition(Duration position) {
+  void _updatePosition(Duration position, [DateTime? absolutePosition]) {
     value = value.copyWith(
       position: position,
+      absolutePosition: absolutePosition,
       caption: _getCaptionAt(position),
       isCompleted: position == value.duration,
     );
@@ -770,6 +797,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
+
+  /// Sets the audio mode to mix with other sources
+  void setMixWithOthers(bool mixWithOthers) {
+    _videoPlayerPlatform.setMixWithOthers(mixWithOthers);
+  }
 }
 
 class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
