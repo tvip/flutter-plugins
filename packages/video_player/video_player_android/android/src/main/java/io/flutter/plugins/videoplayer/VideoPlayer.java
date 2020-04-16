@@ -14,6 +14,7 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import androidx.media3.common.AudioAttributes;
 import androidx.media3.common.C;
+import androidx.media3.common.Timeline;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -156,6 +157,16 @@ final class VideoPlayer implements TextureRegistry.SurfaceProducer.Callback {
   }
 
   long getPosition() {
+    return exoPlayer.getCurrentPosition();
+  }
+
+  long getAbsolutePosition() {
+    Timeline timeline = exoPlayer.getCurrentTimeline();
+    if (!timeline.isEmpty()) {
+      long windowStartTimeMs = timeline.getWindow(0, new Timeline.Window()).windowStartTimeMs;
+      long pos = exoPlayer.getCurrentPosition();
+      return (windowStartTimeMs + pos);
+    }
     return exoPlayer.getCurrentPosition();
   }
 

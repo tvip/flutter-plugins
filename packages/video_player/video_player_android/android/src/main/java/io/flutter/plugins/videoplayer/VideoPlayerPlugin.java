@@ -13,6 +13,7 @@ import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
+import io.flutter.plugins.videoplayer.Messages.AbsolutePositionMessage;
 import io.flutter.plugins.videoplayer.Messages.AndroidVideoPlayerApi;
 import io.flutter.plugins.videoplayer.Messages.CreateMessage;
 import io.flutter.plugins.videoplayer.Messages.LoopingMessage;
@@ -171,6 +172,19 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
     PositionMessage result =
         new PositionMessage.Builder()
             .setPosition(player.getPosition())
+            .setTextureId(arg.getTextureId())
+            .build();
+    player.sendBufferingUpdate();
+    return result;
+  }
+
+  @NonNull
+  @Override
+  public AbsolutePositionMessage absolutePosition(@NonNull TextureMessage arg) {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    AbsolutePositionMessage result =
+        new AbsolutePositionMessage.Builder()
+            .setAbsolutePosition(player.getAbsolutePosition())
             .setTextureId(arg.getTextureId())
             .build();
     player.sendBufferingUpdate();

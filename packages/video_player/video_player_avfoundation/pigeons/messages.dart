@@ -50,6 +50,8 @@ abstract class AVFoundationVideoPlayerApi {
   void play(int textureId);
   @ObjCSelector('positionForPlayer:')
   int getPosition(int textureId);
+  @ObjCSelector('absolutePositionForPlayer:')
+  int? getAbsolutePosition(int textureId);
   @async
   @ObjCSelector('seekTo:forPlayer:')
   void seekTo(int position, int textureId);

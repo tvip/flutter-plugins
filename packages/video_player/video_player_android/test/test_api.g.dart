@@ -17,26 +17,29 @@ class _TestHostVideoPlayerApiCodec extends StandardMessageCodec {
   const _TestHostVideoPlayerApiCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is CreateMessage) {
+    if (value is AbsolutePositionMessage) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is LoopingMessage) {
+    } else if (value is CreateMessage) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is MixWithOthersMessage) {
+    } else if (value is LoopingMessage) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is PlaybackSpeedMessage) {
+    } else if (value is MixWithOthersMessage) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is PositionMessage) {
+    } else if (value is PlaybackSpeedMessage) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is TextureMessage) {
+    } else if (value is PositionMessage) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is VolumeMessage) {
+    } else if (value is TextureMessage) {
       buffer.putUint8(134);
+      writeValue(buffer, value.encode());
+    } else if (value is VolumeMessage) {
+      buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -47,18 +50,20 @@ class _TestHostVideoPlayerApiCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 128:
-        return CreateMessage.decode(readValue(buffer)!);
+        return AbsolutePositionMessage.decode(readValue(buffer)!);
       case 129:
-        return LoopingMessage.decode(readValue(buffer)!);
+        return CreateMessage.decode(readValue(buffer)!);
       case 130:
-        return MixWithOthersMessage.decode(readValue(buffer)!);
+        return LoopingMessage.decode(readValue(buffer)!);
       case 131:
-        return PlaybackSpeedMessage.decode(readValue(buffer)!);
+        return MixWithOthersMessage.decode(readValue(buffer)!);
       case 132:
-        return PositionMessage.decode(readValue(buffer)!);
+        return PlaybackSpeedMessage.decode(readValue(buffer)!);
       case 133:
-        return TextureMessage.decode(readValue(buffer)!);
+        return PositionMessage.decode(readValue(buffer)!);
       case 134:
+        return TextureMessage.decode(readValue(buffer)!);
+      case 135:
         return VolumeMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -86,6 +91,8 @@ abstract class TestHostVideoPlayerApi {
   void play(TextureMessage msg);
 
   PositionMessage position(TextureMessage msg);
+
+  AbsolutePositionMessage absolutePosition(TextureMessage msg);
 
   void seekTo(PositionMessage msg);
 
@@ -263,6 +270,28 @@ abstract class TestHostVideoPlayerApi {
           assert(arg_msg != null,
               'Argument for dev.flutter.pigeon.AndroidVideoPlayerApi.position was null, expected non-null TextureMessage.');
           final PositionMessage output = api.position(arg_msg!);
+          return <Object?>[output];
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.AndroidVideoPlayerApi.absolutePosition', codec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger
+            .setMockDecodedMessageHandler<Object?>(channel, null);
+      } else {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger
+            .setMockDecodedMessageHandler<Object?>(channel,
+                (Object? message) async {
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.AndroidVideoPlayerApi.absolutePosition was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final TextureMessage? arg_msg = (args[0] as TextureMessage?);
+          assert(arg_msg != null,
+              'Argument for dev.flutter.pigeon.AndroidVideoPlayerApi.absolutePosition was null, expected non-null TextureMessage.');
+          final AbsolutePositionMessage output = api.absolutePosition(arg_msg!);
           return <Object?>[output];
         });
       }

@@ -16,6 +16,8 @@
 #error Code Requires ARC.
 #endif
 
+int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) { return (int64_t)(interval * 1000.0); }
+
 @interface FVPFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
 @property(nonatomic, weak, readonly) NSObject<FlutterTextureRegistry> *registry;
@@ -442,9 +444,10 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
     }
     // The player may be initialized but still needs to determine the duration.
     int64_t duration = [self duration];
-    if (duration == 0) {
-      return;
-    }
+    // FIXME: this not work for HLS live stream
+    // if (duration == 0) {
+    //  return;
+    //}
 
     _isInitialized = YES;
     _eventSink(@{
@@ -468,6 +471,10 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 
 - (int64_t)position {
   return FVPCMTimeToMillis([_player currentTime]);
+}
+
+- (int64_t)absolutePosition {
+  return FLTNSTimeIntervalToMillis([[[_player currentItem] currentDate] timeIntervalSince1970]);
 }
 
 - (int64_t)duration {
@@ -794,6 +801,11 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 - (nullable NSNumber *)positionForPlayer:(NSInteger)textureId error:(FlutterError **)error {
   FVPVideoPlayer *player = self.playersByTextureId[@(textureId)];
   return @([player position]);
+}
+
+- (nullable NSNumber *)absolutePositionForPlayer:(NSInteger)textureId error:(FlutterError **)error {
+  FVPVideoPlayer *player = self.playersByTextureId[@(textureId)];
+  return @([player absolutePosition]);
 }
 
 - (void)seekTo:(NSInteger)position

@@ -100,6 +100,13 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<int?> getAbsolutePosition(int textureId) async {
+    final int? response = await _api.getAbsolutePosition(textureId);
+
+    return response;
+  }
+
+  @override
   Stream<VideoEvent> videoEventsFor(int textureId) {
     return _eventChannelFor(textureId)
         .receiveBroadcastStream()

@@ -42,6 +42,12 @@ class PositionMessage {
   int position;
 }
 
+class AbsolutePositionMessage {
+  AbsolutePositionMessage(this.textureId, this.absolutePosition);
+  int textureId;
+  int? absolutePosition;
+}
+
 class CreateMessage {
   CreateMessage({required this.httpHeaders});
   String? asset;
@@ -66,6 +72,7 @@ abstract class AndroidVideoPlayerApi {
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
   void play(TextureMessage msg);
   PositionMessage position(TextureMessage msg);
+  AbsolutePositionMessage absolutePosition(TextureMessage msg);
   void seekTo(PositionMessage msg);
   void pause(TextureMessage msg);
   void setMixWithOthers(MixWithOthersMessage msg);

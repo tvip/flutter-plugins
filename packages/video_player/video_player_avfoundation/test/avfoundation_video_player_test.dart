@@ -90,6 +90,13 @@ class _ApiLogger implements TestHostVideoPlayerApi {
     playbackSpeed = speed;
     this.textureId = textureId;
   }
+
+  @override
+  int? getAbsolutePosition(int textureId) {
+    log.add('getAbsolutePosition');
+    this.textureId = textureId;
+    return null;
+  }
 }
 
 void main() {
