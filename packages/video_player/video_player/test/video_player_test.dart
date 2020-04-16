@@ -51,6 +51,13 @@ class FakeController extends ValueNotifier<VideoPlayerValue>
 
   @override
   Future<ClosedCaptionFile> get closedCaptionFile => _loadClosedCaption();
+
+  @override
+  Map<String, String> httpHeaders;
+
+  @override
+  // TODO: implement absolutePosition
+  Future<DateTime> get absolutePosition => null;
 }
 
 Future<ClosedCaptionFile> _loadClosedCaption() async =>
