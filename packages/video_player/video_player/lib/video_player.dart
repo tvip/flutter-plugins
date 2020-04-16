@@ -237,7 +237,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   final String package;
 
 
-  final Map<String, String> httpHeaders;
+  Map<String, String> httpHeaders;
 
   /// Optional field to specify a file containing the closed
   /// captioning.

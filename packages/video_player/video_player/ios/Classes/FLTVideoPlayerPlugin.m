@@ -15,6 +15,10 @@ int64_t FLTCMTimeToMillis(CMTime time) {
   if (time.timescale == 0) return 0;
   return time.value * 1000 / time.timescale;
 }
+int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) {
+  return (int64_t)(interval * 1000.0);
+}
+
 
 @interface FLTFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
@@ -46,7 +50,9 @@ int64_t FLTCMTimeToMillis(CMTime time) {
 @property(nonatomic, readonly) bool isPlaying;
 @property(nonatomic) bool isLooping;
 @property(nonatomic, readonly) bool isInitialized;
-- (instancetype)initWithURL:(NSURL*)url frameUpdater:(FLTFrameUpdater*)frameUpdater;
+- (instancetype)initWithURL:(NSURL*)url
+                frameUpdater:(FLTFrameUpdater*)frameUpdater
+                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers;
 - (void)play;
 - (void)pause;
 - (void)setIsLooping:(bool)isLooping;
@@ -62,7 +68,7 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
 @implementation FLTVideoPlayer
 - (instancetype)initWithAsset:(NSString*)asset frameUpdater:(FLTFrameUpdater*)frameUpdater {
   NSString* path = [[NSBundle mainBundle] pathForResource:asset ofType:nil];
-  return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater];
+  return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater httpHeaders:nil];
 }
 
 - (void)addObservers:(AVPlayerItem*)item {
@@ -162,8 +168,14 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   _displayLink.paused = YES;
 }
 
-- (instancetype)initWithURL:(NSURL*)url frameUpdater:(FLTFrameUpdater*)frameUpdater {
-  AVPlayerItem* item = [AVPlayerItem playerItemWithURL:url];
+- (instancetype)initWithURL:(NSURL*)url
+                frameUpdater:(FLTFrameUpdater*)frameUpdater
+                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers{
+  if (headers != (NSDictionary<NSString*, NSString*>*)[NSNull null]) {
+    options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
+  }
+  AVURLAsset* asset = [AVURLAsset URLAssetWithURL:url options:options];
+  AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:asset];
   return [self initWithPlayerItem:item frameUpdater:frameUpdater];
 }
 
@@ -274,6 +286,10 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     }
   } else if (context == playbackLikelyToKeepUpContext) {
     if ([[_player currentItem] isPlaybackLikelyToKeepUp]) {
+      if (!_isInitialized) {
+        _isInitialized = true;
+        [self sendInitialized];
+      }
       [self updatePlayingState];
       if (_eventSink != nil) {
         _eventSink(@{@"event" : @"bufferingEnd"});
@@ -288,6 +304,39 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       _eventSink(@{@"event" : @"bufferingEnd"});
     }
   }
+}
+
+- (double)getDisplayAspectRatioForItem:(AVPlayerItem*)item {
+  CGSize presentationSize = [item presentationSize];
+  double aspectRatio = presentationSize.width / presentationSize.height;
+
+  for (AVPlayerItemTrack* itemTrack in [item tracks]) {
+    AVAssetTrack* assetTrack = [itemTrack assetTrack];
+    if ([[assetTrack mediaType] isEqualToString:AVMediaTypeVideo]) {
+      NSArray* formatDescriptions = [assetTrack formatDescriptions];
+      if ([formatDescriptions count] > 0) {
+        CMFormatDescriptionRef formatDescription =
+            (__bridge CMFormatDescriptionRef)[formatDescriptions objectAtIndex:0];
+        CFDictionaryRef pixelAspectRatioRef = CMFormatDescriptionGetExtension(
+            formatDescription, kCMFormatDescriptionExtension_PixelAspectRatio);
+        if (pixelAspectRatioRef) {
+          NSDictionary* pixelAspectRatioDict = (__bridge NSDictionary*)pixelAspectRatioRef;
+          double w = [[pixelAspectRatioDict objectForKey:@"HorizontalSpacing"] doubleValue];
+          double h = [[pixelAspectRatioDict objectForKey:@"VerticalSpacing"] doubleValue];
+          double nw = [assetTrack naturalSize].width;
+          double nh = [assetTrack naturalSize].height;
+          if (w != 0 && h != 0 && nw != 0 && nh != 0) {
+            double par = w / h;
+            double dar = par * nw / nh;
+            aspectRatio = dar;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return aspectRatio;
 }
 
 - (void)updatePlayingState {
@@ -307,6 +356,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     CGSize size = [self.player currentItem].presentationSize;
     CGFloat width = size.width;
     CGFloat height = size.height;
+    double dar = [self getDisplayAspectRatioForItem:[self.player currentItem]];
 
     // The player has not yet initialized.
     if (height == CGSizeZero.height && width == CGSizeZero.width) {
@@ -322,7 +372,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       @"event" : @"initialized",
       @"duration" : @([self duration]),
       @"width" : @(width),
-      @"height" : @(height)
+      @"height" : @(height),
+      @"aspectRatio" : @(dar)
     });
   }
 }
@@ -339,6 +390,10 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (int64_t)position {
   return FLTCMTimeToMillis([_player currentTime]);
+}
+
+- (int64_t)absolutePosition {
+  return FLTNSTimeIntervalToMillis([[[_player currentItem] currentDate] timeIntervalSince1970]);
 }
 
 - (int64_t)duration {
@@ -521,8 +576,10 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     player = [[FLTVideoPlayer alloc] initWithAsset:assetPath frameUpdater:frameUpdater];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else if (input.uri) {
+    NSDictionary<NSString*, NSString*>* httpHeaders = input.httpHeaders;
     player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-                                    frameUpdater:frameUpdater];
+                                    frameUpdater:frameUpdater
+                                    httpHeaders:httpHeaders];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
     *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
