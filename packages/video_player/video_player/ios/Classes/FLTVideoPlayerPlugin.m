@@ -15,10 +15,7 @@ int64_t FLTCMTimeToMillis(CMTime time) {
   if (time.timescale == 0) return 0;
   return time.value * 1000 / time.timescale;
 }
-int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) {
-  return (int64_t)(interval * 1000.0);
-}
-
+int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) { return (int64_t)(interval * 1000.0); }
 
 @interface FLTFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
