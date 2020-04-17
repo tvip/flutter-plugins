@@ -14,10 +14,7 @@ int64_t FLTCMTimeToMillis(CMTime time) {
   if (time.timescale == 0) return 0;
   return time.value * 1000 / time.timescale;
 }
-int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) {
-  return (int64_t)(interval * 1000.0);
-}
-
+int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) { return (int64_t)(interval * 1000.0); }
 
 @interface FLTFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
@@ -50,7 +47,7 @@ int64_t FLTNSTimeIntervalToMillis(NSTimeInterval interval) {
 @property(nonatomic) bool isLooping;
 @property(nonatomic, readonly) bool isInitialized;
 - (instancetype)initWithURL:(NSURL*)url
-                frameUpdater:(FLTFrameUpdater*)frameUpdater
+               frameUpdater:(FLTFrameUpdater*)frameUpdater
                 httpHeaders:(NSDictionary<NSString*, NSString*>*)headers;
 - (void)play;
 - (void)pause;
@@ -168,9 +165,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (instancetype)initWithURL:(NSURL*)url
-                frameUpdater:(FLTFrameUpdater*)frameUpdater
-                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers{
-
+               frameUpdater:(FLTFrameUpdater*)frameUpdater
+                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers {
   NSDictionary<NSString*, id>* options = nil;
   if (headers != (NSDictionary<NSString*, NSString*>*)[NSNull null]) {
     options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
@@ -288,10 +284,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     }
   } else if (context == playbackLikelyToKeepUpContext) {
     if ([[_player currentItem] isPlaybackLikelyToKeepUp]) {
-      if (!_isInitialized) {
-        _isInitialized = true;
-        [self sendInitialized];
-      }
       [self updatePlayingState];
       if (_eventSink != nil) {
         _eventSink(@{@"event" : @"bufferingEnd"});
@@ -362,10 +354,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
     // The player has not yet initialized.
     if (height == CGSizeZero.height && width == CGSizeZero.width) {
-      return;
-    }
-    // The player may be initialized but still needs to determine the duration.
-    if ([self duration] == 0) {
       return;
     }
 

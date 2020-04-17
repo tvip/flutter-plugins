@@ -4,9 +4,6 @@
 
 package io.flutter.plugins.videoplayer;
 
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.Format;
-
 import android.content.Context;
 import android.util.Log;
 import android.util.LongSparseArray;
@@ -20,7 +17,6 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.view.FlutterMain;
 import io.flutter.view.TextureRegistry;
-
 import java.util.Map;
 
 /** Android platform implementation of the VideoPlayerPlugin. */

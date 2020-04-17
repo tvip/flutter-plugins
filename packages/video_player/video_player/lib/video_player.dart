@@ -225,7 +225,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// Only set for [asset] videos. The package that the asset was loaded from.
   final String package;
 
-
   Map<String, String> httpHeaders;
 
   /// Optional field to specify a file containing the closed
@@ -264,11 +263,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         break;
       case DataSourceType.network:
         dataSourceDescription = DataSource(
-          sourceType: DataSourceType.network,
-          uri: dataSource,
-          formatHint: formatHint,
-            httpHeaders: httpHeaders
-        );
+            sourceType: DataSourceType.network,
+            uri: dataSource,
+            formatHint: formatHint,
+            httpHeaders: httpHeaders);
         break;
       case DataSourceType.file:
         dataSourceDescription = DataSource(
@@ -400,7 +398,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           if (_isDisposed) {
             return;
           }
-          _updatePosition(position: newPosition, absolutePosition: newAbsolutePosition);
+          _updatePosition(
+              position: newPosition, absolutePosition: newAbsolutePosition);
         },
       );
     } else {
@@ -430,7 +429,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (_isDisposed) {
       return null;
     }
-    final int milliseconds = await _videoPlayerPlatform.getAbsolutePosition(_textureId);
+    final int milliseconds =
+        await _videoPlayerPlatform.getAbsolutePosition(_textureId);
 
     if (milliseconds <= 0) return null;
 
@@ -486,8 +486,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     return Caption();
   }
 
-  void _updatePosition({@required Duration position, DateTime absolutePosition}) {
-    value = value.copyWith(position: position, absolutePosition: absolutePosition);
+  void _updatePosition(
+      {@required Duration position, DateTime absolutePosition}) {
+    value =
+        value.copyWith(position: position, absolutePosition: absolutePosition);
     value = value.copyWith(caption: _getCaptionAt(position));
   }
 }
