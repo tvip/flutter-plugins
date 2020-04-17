@@ -3,10 +3,6 @@ package io.flutter.plugins.videoplayer;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_ALL;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
 
-
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.Format;
-
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
@@ -19,6 +15,7 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.EventListener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
@@ -79,18 +76,17 @@ final class VideoPlayer {
     DataSource.Factory dataSourceFactory;
     if (isHTTP(uri)) {
 
+      String userAgentValue = null;
 
-        String userAgentValue = null;
-
-        if (httpHeaders != null) {
-            for (Map.Entry<String, String> entry : httpHeaders.entrySet()) {
-                if (entry.getKey().toLowerCase().equals("user-agent")) {
-                    userAgentValue = entry.getValue();
-                }
-            }
+      if (httpHeaders != null) {
+        for (Map.Entry<String, String> entry : httpHeaders.entrySet()) {
+          if (entry.getKey().toLowerCase().equals("user-agent")) {
+            userAgentValue = entry.getValue();
+          }
         }
+      }
 
-        DefaultHttpDataSourceFactory httpDataSourceFactory =
+      DefaultHttpDataSourceFactory httpDataSourceFactory =
           new DefaultHttpDataSourceFactory(
               userAgentValue == null ? "ExoPlayer" : userAgentValue,
               null,
@@ -98,10 +94,10 @@ final class VideoPlayer {
               DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
               true);
 
-        dataSourceFactory = httpDataSourceFactory;
-        if (httpHeaders != null) {
-            httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
-        }
+      dataSourceFactory = httpDataSourceFactory;
+      if (httpHeaders != null) {
+        httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
+      }
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
     }
@@ -269,15 +265,15 @@ final class VideoPlayer {
     return exoPlayer.getCurrentPosition();
   }
 
-    long getAbsolutePosition() {
-        Timeline timeline = exoPlayer.getCurrentTimeline();
-        if (!timeline.isEmpty()) {
-            long windowStartTimeMs = timeline.getWindow(0, new Timeline.Window()).windowStartTimeMs;
-            long pos = exoPlayer.getCurrentPosition();
-            return (windowStartTimeMs + pos);
-        }
-        return exoPlayer.getCurrentPosition();
+  long getAbsolutePosition() {
+    Timeline timeline = exoPlayer.getCurrentTimeline();
+    if (!timeline.isEmpty()) {
+      long windowStartTimeMs = timeline.getWindow(0, new Timeline.Window()).windowStartTimeMs;
+      long pos = exoPlayer.getCurrentPosition();
+      return (windowStartTimeMs + pos);
     }
+    return exoPlayer.getCurrentPosition();
+  }
 
   @SuppressWarnings("SuspiciousNameCombination")
   private void sendInitialized() {
