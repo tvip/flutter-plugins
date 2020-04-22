@@ -271,6 +271,21 @@ final class VideoPlayer {
     return exoPlayer.getCurrentPosition();
   }
 
+  double getDisplayAspectRatio(Format videoFormat) {
+    double aspectRatio = 1.0;
+
+    if (videoFormat == null) return aspectRatio;
+
+    aspectRatio = videoFormat.pixelWidthHeightRatio;
+    int width = videoFormat.width;
+    int height = videoFormat.height;
+    if (height != 0 && width != 0) {
+      aspectRatio *= (double) width / height;
+    }
+
+    return aspectRatio;
+  }
+
   @SuppressWarnings("SuspiciousNameCombination")
   private void sendInitialized() {
     if (isInitialized) {
@@ -290,6 +305,7 @@ final class VideoPlayer {
         }
         event.put("width", width);
         event.put("height", height);
+        event.put("aspectRatio", getDisplayAspectRatio(exoPlayer.getVideoFormat()));
       }
       eventSink.success(event);
     }

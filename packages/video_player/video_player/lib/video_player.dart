@@ -30,6 +30,7 @@ class VideoPlayerValue {
   VideoPlayerValue({
     @required this.duration,
     this.size,
+    this.aspectRatio,
     this.position = const Duration(),
     this.absolutePosition,
     this.caption = const Caption(),
@@ -93,6 +94,11 @@ class VideoPlayerValue {
   /// Is null when [initialized] is false.
   final Size size;
 
+  /// The [aspectRatio] of the currently loaded video.
+  ///
+  /// Is null when [initialized] is false.
+  final double aspectRatio;
+
   /// Indicates whether or not the video has been loaded and is ready to play.
   bool get initialized => duration != null;
 
@@ -100,24 +106,12 @@ class VideoPlayerValue {
   /// [errorDescription] should have information about the problem.
   bool get hasError => errorDescription != null;
 
-  /// Returns [size.width] / [size.height] when size is non-null, or `1.0.` when
-  /// size is null or the aspect ratio would be less than or equal to 0.0.
-  double get aspectRatio {
-    if (size == null) {
-      return 1.0;
-    }
-    final double aspectRatio = size.width / size.height;
-    if (aspectRatio <= 0) {
-      return 1.0;
-    }
-    return aspectRatio;
-  }
-
   /// Returns a new instance that has the same values as this current instance,
   /// except for any overrides passed in as arguments to [copyWidth].
   VideoPlayerValue copyWith({
     Duration duration,
     Size size,
+    double aspectRatio,
     Duration position,
     DateTime absolutePosition,
     Caption caption,
@@ -131,6 +125,7 @@ class VideoPlayerValue {
     return VideoPlayerValue(
       duration: duration ?? this.duration,
       size: size ?? this.size,
+      aspectRatio: aspectRatio ?? this.aspectRatio,
       position: position ?? this.position,
       absolutePosition: absolutePosition ?? this.absolutePosition,
       caption: caption ?? this.caption,
@@ -148,6 +143,7 @@ class VideoPlayerValue {
     return '$runtimeType('
         'duration: $duration, '
         'size: $size, '
+        'aspectRatio: $aspectRatio, '
         'position: $position, '
         'absolutePosition: $absolutePosition, '
         'caption: $caption, '
