@@ -30,6 +30,7 @@ class VideoPlayerValue {
   VideoPlayerValue({
     @required this.duration,
     this.size,
+    this.aspectRatio,
     this.position = const Duration(),
     this.absolutePosition,
     this.caption = const Caption(),
@@ -97,6 +98,11 @@ class VideoPlayerValue {
   /// Is null when [initialized] is false.
   final Size size;
 
+  /// The [aspectRatio] of the currently loaded video.
+  ///
+  /// Is null when [initialized] is false.
+  final double aspectRatio;
+
   /// Indicates whether or not the video has been loaded and is ready to play.
   bool get initialized => duration != null;
 
@@ -122,6 +128,7 @@ class VideoPlayerValue {
   VideoPlayerValue copyWith({
     Duration duration,
     Size size,
+    double aspectRatio,
     Duration position,
     DateTime absolutePosition,
     Caption caption,
@@ -136,6 +143,7 @@ class VideoPlayerValue {
     return VideoPlayerValue(
       duration: duration ?? this.duration,
       size: size ?? this.size,
+      aspectRatio: aspectRatio ?? this.aspectRatio,
       position: position ?? this.position,
       absolutePosition: absolutePosition ?? this.absolutePosition,
       caption: caption ?? this.caption,
@@ -154,6 +162,7 @@ class VideoPlayerValue {
     return '$runtimeType('
         'duration: $duration, '
         'size: $size, '
+        'aspectRatio: $aspectRatio, '
         'position: $position, '
         'absolutePosition: $absolutePosition, '
         'caption: $caption, '
