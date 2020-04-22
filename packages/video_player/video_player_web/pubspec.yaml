@@ -16,8 +16,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   meta: ^1.1.7
-  video_player_platform_interface:
-    path: ../video_player_platform_interface
+  video_player_platform_interface: ^1.0.0
 
 dev_dependencies:
   flutter_test:
