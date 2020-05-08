@@ -186,7 +186,6 @@ public class VideoPlayerPlugin implements MethodCallHandler, FlutterPlugin {
         break;
       case "absolutePosition":
         result.success(player.getAbsolutePosition());
-        player.sendBufferingUpdate();
         break;
       case "dispose":
         player.dispose();
