@@ -190,9 +190,7 @@ final class VideoPlayer {
 
           @Override
           public void onPlayerStateChanged(final boolean playWhenReady, final int playbackState) {
-            if (playbackState == Player.STATE_BUFFERING) {
-              sendBufferingUpdate();
-            } else if (playbackState == Player.STATE_READY) {
+            if (playbackState == Player.STATE_READY) {
               if (!isInitialized) {
                 isInitialized = true;
                 sendInitialized();
