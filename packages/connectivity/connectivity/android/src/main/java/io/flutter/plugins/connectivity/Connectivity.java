@@ -103,4 +103,8 @@ class Connectivity {
         return "none";
     }
   }
+
+  public ConnectivityManager getConnectivityManager() {
+    return connectivityManager;
+  }
 }
