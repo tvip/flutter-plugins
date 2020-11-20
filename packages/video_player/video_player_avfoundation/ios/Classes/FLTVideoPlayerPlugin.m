@@ -387,10 +387,10 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
       return;
     }
     // The player may be initialized but still needs to determine the duration.
-    int64_t duration = [self duration];
-    if (duration == 0) {
-      return;
-    }
+    // FIXME: this not work for HLS live stream
+    //if ([self duration] == 0) {
+    //  return;
+    //}
 
     _isInitialized = YES;
     _eventSink(@{
@@ -657,6 +657,13 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   FLTPositionMessage *result = [FLTPositionMessage makeWithTextureId:input.textureId
                                                             position:@([player position])];
+  return result;
+}
+
+- (FLTAbsolutePositionMessage*)absolutePosition:(FLTTextureMessage*)input error:(FlutterError**)error {
+  FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
+  FLTAbsolutePositionMessage* result = [[FLTAbsolutePositionMessage alloc] init];
+  result.absolutePosition = @([player absolutePosition]);
   return result;
 }
 
