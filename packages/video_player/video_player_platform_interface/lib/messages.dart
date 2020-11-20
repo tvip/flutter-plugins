@@ -29,6 +29,7 @@ class TextureMessage {
 class CreateMessage {
   String asset;
   String uri;
+  Map<String,String> httpHeaders;
   String packageName;
   String formatHint;
   // ignore: unused_element
@@ -38,6 +39,7 @@ class CreateMessage {
     pigeonMap['uri'] = uri;
     pigeonMap['packageName'] = packageName;
     pigeonMap['formatHint'] = formatHint;
+    pigeonMap['httpHeaders'] = httpHeaders;
     return pigeonMap;
   }
 
@@ -51,6 +53,7 @@ class CreateMessage {
     result.uri = pigeonMap['uri'];
     result.packageName = pigeonMap['packageName'];
     result.formatHint = pigeonMap['formatHint'];
+    result.httpHeaders = pigeonMap['httpHeaders'];
     return result;
   }
 }
@@ -143,6 +146,29 @@ class PositionMessage {
     final PositionMessage result = PositionMessage();
     result.textureId = pigeonMap['textureId'];
     result.position = pigeonMap['position'];
+    return result;
+  }
+}
+
+class AbsolutePositionMessage {
+  int textureId;
+  int absolutePosition;
+  // ignore: unused_element
+  Map<dynamic, dynamic> _toMap() {
+    final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
+    pigeonMap['textureId'] = textureId;
+    pigeonMap['absolutePosition'] = absolutePosition;
+    return pigeonMap;
+  }
+
+  // ignore: unused_element
+  static AbsolutePositionMessage _fromMap(Map<dynamic, dynamic> pigeonMap) {
+    if (pigeonMap == null) {
+      return null;
+    }
+    final AbsolutePositionMessage result = AbsolutePositionMessage();
+    result.textureId = pigeonMap['textureId'];
+    result.absolutePosition = pigeonMap['absolutePosition'];
     return result;
   }
 }
@@ -341,6 +367,28 @@ class VideoPlayerApi {
           details: error['details']);
     } else {
       return PositionMessage._fromMap(replyMap['result']);
+    }
+  }
+
+  Future<AbsolutePositionMessage> absolutePosition(TextureMessage arg) async {
+    final Map<dynamic, dynamic> requestMap = arg._toMap();
+    const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+        'dev.flutter.pigeon.VideoPlayerApi.absolutePosition', StandardMessageCodec());
+
+    final Map<dynamic, dynamic> replyMap = await channel.send(requestMap);
+    if (replyMap == null) {
+      throw PlatformException(
+          code: 'channel-error',
+          message: 'Unable to establish connection on channel.',
+          details: null);
+    } else if (replyMap['error'] != null) {
+      final Map<dynamic, dynamic> error = replyMap['error'];
+      throw PlatformException(
+          code: error['code'],
+          message: error['message'],
+          details: error['details']);
+    } else {
+      return AbsolutePositionMessage._fromMap(replyMap['result']);
     }
   }
 

@@ -110,19 +110,6 @@ class VideoPlayerValue {
   /// [errorDescription] should have information about the problem.
   bool get hasError => errorDescription != null;
 
-  /// Returns [size.width] / [size.height] when size is non-null, or `1.0.` when
-  /// size is null or the aspect ratio would be less than or equal to 0.0.
-  double get aspectRatio {
-    if (size == null || size.width == 0 || size.height == 0) {
-      return 1.0;
-    }
-    final double aspectRatio = size.width / size.height;
-    if (aspectRatio <= 0) {
-      return 1.0;
-    }
-    return aspectRatio;
-  }
-
   /// Returns a new instance that has the same values as this current instance,
   /// except for any overrides passed in as arguments to [copyWidth].
   VideoPlayerValue copyWith({
@@ -207,7 +194,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// **Android only**: The [formatHint] option allows the caller to override
   /// the video format detection code.
   VideoPlayerController.network(this.dataSource,
-      {this.formatHint, this.httpHeaders, this.closedCaptionFile, this.videoPlayerOptions})
+      {this.formatHint, this.httpHeaders = const <String, String>{}, this.closedCaptionFile, this.videoPlayerOptions})
       : dataSourceType = DataSourceType.network,
         package = null,
         super(VideoPlayerValue(duration: null));
@@ -245,7 +232,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// Only set for [asset] videos. The package that the asset was loaded from.
   final String package;
 
-  Map<String, String> httpHeaders;
+  /// Only set for [network] videos.
+  final Map<String, String> httpHeaders;
 
   /// Optional field to specify a file containing the closed
   /// captioning.
@@ -286,7 +274,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           sourceType: DataSourceType.network,
           uri: dataSource,
           formatHint: formatHint,
-          httpHeaders: httpHeaders
+          httpHeaders: httpHeaders,
         );
         break;
       case DataSourceType.file:

@@ -27,6 +27,7 @@ class PositionMessage {
 class CreateMessage {
   String asset;
   String uri;
+  Map<String, String> httpHeaders;
   String packageName;
   String formatHint;
 }

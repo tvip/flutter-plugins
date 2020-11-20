@@ -28,6 +28,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
@@ -62,7 +63,7 @@ final class VideoPlayer {
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
       String dataSource,
-      Map<String, String> httpHeaders,
+      Map httpHeaders,
       String formatHint,
       VideoPlayerOptions options) {
     this.eventChannel = eventChannel;
@@ -79,9 +80,9 @@ final class VideoPlayer {
       String userAgentValue = null;
 
       if (httpHeaders != null) {
-        for (Map.Entry<String, String> entry : httpHeaders.entrySet()) {
-          if (entry.getKey().toLowerCase().equals("user-agent")) {
-            userAgentValue = entry.getValue();
+        for (Object key : httpHeaders.keySet()) {
+          if (((String) key).toLowerCase().equals("user-agent")) {
+            userAgentValue = (String) httpHeaders.get(key);
           }
         }
       }
@@ -96,7 +97,11 @@ final class VideoPlayer {
 
       dataSourceFactory = httpDataSourceFactory;
       if (httpHeaders != null) {
-        httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
+        HttpDataSource.RequestProperties requestProperties = httpDataSourceFactory.getDefaultRequestProperties();
+
+        for (Object key : httpHeaders.keySet()) {
+          requestProperties.set((String) key, (String) httpHeaders.get(key));
+        }
       }
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");

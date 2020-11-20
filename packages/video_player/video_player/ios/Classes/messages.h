@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FLTVolumeMessage;
 @class FLTPlaybackSpeedMessage;
 @class FLTPositionMessage;
+@class FLTAbsolutePositionMessage;
 @class FLTMixWithOthersMessage;
 
 @interface FLTTextureMessage : NSObject
@@ -24,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString *uri;
 @property(nonatomic, copy, nullable) NSString *packageName;
 @property(nonatomic, copy, nullable) NSString *formatHint;
+@property(nonatomic, copy, nullable) NSDictionary<NSString*, NSString*> *httpHeaders;
 @end
 
 @interface FLTLoopingMessage : NSObject
@@ -46,6 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) NSNumber *position;
 @end
 
+@interface FLTAbsolutePositionMessage : NSObject
+@property(nonatomic, strong, nullable) NSNumber *textureId;
+@property(nonatomic, strong, nullable) NSNumber *absolutePosition;
+@end
+
 @interface FLTMixWithOthersMessage : NSObject
 @property(nonatomic, strong, nullable) NSNumber *mixWithOthers;
 @end
@@ -61,6 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
                    error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)play:(FLTTextureMessage *)input error:(FlutterError *_Nullable *_Nonnull)error;
 - (nullable FLTPositionMessage *)position:(FLTTextureMessage *)input
+                                    error:(FlutterError *_Nullable *_Nonnull)error;
+- (nullable FLTAbsolutePositionMessage *)absolutePosition:(FLTTextureMessage *)input
                                     error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)seekTo:(FLTPositionMessage *)input error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)pause:(FLTTextureMessage *)input error:(FlutterError *_Nullable *_Nonnull)error;
