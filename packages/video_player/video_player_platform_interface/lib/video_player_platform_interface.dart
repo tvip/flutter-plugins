@@ -27,6 +27,8 @@ abstract class VideoPlayerPlatform {
   @visibleForTesting
   bool get isMock => false;
 
+  static VideoPlayerPlatform _instance = MethodChannelVideoPlayer();
+
   /// The default instance of [VideoPlayerPlatform] to use.
   ///
   /// Platform-specific plugins should override this with their own
@@ -34,8 +36,6 @@ abstract class VideoPlayerPlatform {
   /// register themselves.
   ///
   /// Defaults to [MethodChannelVideoPlayer].
-  static VideoPlayerPlatform _instance = MethodChannelVideoPlayer();
-
   static VideoPlayerPlatform get instance => _instance;
 
   // TODO(amirh): Extract common platform interface logic.
@@ -100,14 +100,29 @@ abstract class VideoPlayerPlatform {
     throw UnimplementedError('seekTo() has not been implemented.');
   }
 
+  /// Sets the playback speed to a [speed] value indicating the playback rate.
+  Future<void> setPlaybackSpeed(int textureId, double speed) {
+    throw UnimplementedError('setPlaybackSpeed() has not been implemented.');
+  }
+
   /// Gets the video position as [Duration] from the start.
   Future<Duration> getPosition(int textureId) {
     throw UnimplementedError('getPosition() has not been implemented.');
   }
 
+  /// Gets the video position as milliseconds from the start.
+  Future<int> getAbsolutePosition(int textureId) {
+    throw UnimplementedError('getAbsolutePosition() has not been implemented.');
+  }
+
   /// Returns a widget displaying the video with a given textureID.
   Widget buildView(int textureId) {
     throw UnimplementedError('buildView() has not been implemented.');
+  }
+
+  /// Sets the audio mode to mix with other sources
+  Future<void> setMixWithOthers(bool mixWithOthers) {
+    throw UnimplementedError('setMixWithOthers() has not been implemented.');
   }
 
   // This method makes sure that VideoPlayer isn't implemented with `implements`.
@@ -119,25 +134,60 @@ abstract class VideoPlayerPlatform {
   void _verifyProvidesDefaultImplementations() {}
 }
 
+/// Description of the data source used to create an instance of
+/// the video player.
 class DataSource {
+  /// Constructs an instance of [DataSource].
+  ///
+  /// The [sourceType] is always required.
+  ///
+  /// The [uri] argument takes the form of `'https://example.com/video.mp4'` or
+  /// `'file://${file.path}'`.
+  ///
+  /// The [formatHint] argument can be null.
+  ///
+  /// The [asset] argument takes the form of `'assets/video.mp4'`.
+  ///
+  /// The [package] argument must be non-null when the asset comes from a
+  /// package and null otherwise.
   DataSource({
     @required this.sourceType,
     this.uri,
     this.formatHint,
+    this.httpHeaders,
     this.asset,
     this.package,
   });
 
+  /// The way in which the video was originally loaded.
+  ///
+  /// This has nothing to do with the video's file type. It's just the place
+  /// from which the video is fetched from.
   final DataSourceType sourceType;
+
+  /// The URI to the video file.
+  ///
+  /// This will be in different formats depending on the [DataSourceType] of
+  /// the original video.
   final String uri;
+  final Map<String, String> httpHeaders;
+
+  /// **Android only**. Will override the platform's generic file format
+  /// detection with whatever is set here.
   final VideoFormat formatHint;
+
+  /// The name of the asset. Only set for [DataSourceType.asset] videos.
   final String asset;
+
+  /// The package that the asset was loaded from. Only set for
+  /// [DataSourceType.asset] videos.
   final String package;
 }
 
-/// The way in which the video was originally loaded. This has nothing to do
-/// with the video's file type. It's just the place from which the video is
-/// fetched from.
+/// The way in which the video was originally loaded.
+///
+/// This has nothing to do with the video's file type. It's just the place
+/// from which the video is fetched from.
 enum DataSourceType {
   /// The video was included in the app's asset files.
   asset,
@@ -146,7 +196,7 @@ enum DataSourceType {
   network,
 
   /// The video was loaded off of the local filesystem.
-  file
+  file,
 }
 
 /// The file format of the given video.
@@ -161,10 +211,17 @@ enum VideoFormat {
   ss,
 
   /// Any format other than the other ones defined in this enum.
-  other
+  other,
 }
 
+/// Event emitted from the platform implementation.
 class VideoEvent {
+  /// Creates an instance of [VideoEvent].
+  ///
+  /// The [eventType] argument is required.
+  ///
+  /// Depending on the [eventType], the [duration], [size] and [buffered]
+  /// arguments can be null.
   VideoEvent({
     @required this.eventType,
     this.duration,
@@ -172,9 +229,22 @@ class VideoEvent {
     this.buffered,
   });
 
+  /// The type of the event.
   final VideoEventType eventType;
+
+  /// Duration of the video.
+  ///
+  /// Only used if [eventType] is [VideoEventType.initialized].
   final Duration duration;
+
+  /// Size of the video.
+  ///
+  /// Only used if [eventType] is [VideoEventType.initialized].
   final Size size;
+
+  /// Buffered parts of the video.
+  ///
+  /// Only used if [eventType] is [VideoEventType.bufferingUpdate].
   final List<DurationRange> buffered;
 
   @override
@@ -196,12 +266,27 @@ class VideoEvent {
       buffered.hashCode;
 }
 
+/// Type of the event.
+///
+/// Emitted by the platform implementation when the video is initialized or
+/// completed or to communicate buffering events.
 enum VideoEventType {
+  /// The video has been initialized.
   initialized,
+
+  /// The playback has ended.
   completed,
+
+  /// Updated information on the buffering state.
   bufferingUpdate,
+
+  /// The video started to buffer.
   bufferingStart,
+
+  /// The video stopped to buffer.
   bufferingEnd,
+
+  /// An unknown event has been received.
   unknown,
 }
 
@@ -262,4 +347,14 @@ class DurationRange {
 
   @override
   int get hashCode => start.hashCode ^ end.hashCode;
+}
+
+/// [VideoPlayerOptions] can be optionally used to set additional player settings
+class VideoPlayerOptions {
+  /// Set this to true to mix the video players audio with other audio sources.
+  /// The default value is false
+  final bool mixWithOthers;
+
+  /// set additional optional player settings
+  VideoPlayerOptions({this.mixWithOthers = false});
 }

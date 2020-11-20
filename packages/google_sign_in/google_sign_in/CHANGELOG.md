@@ -1,3 +1,108 @@
+## 4.5.6
+
+* Fix deprecated member warning in tests.
+
+## 4.5.5
+
+* Update android compileSdkVersion to 29.
+
+## 4.5.4
+
+* Keep handling deprecated Android v1 classes for backward compatibility.
+
+## 4.5.3
+
+* Update package:e2e -> package:integration_test
+
+## 4.5.2
+
+* Update package:e2e reference to use the local version in the flutter/plugins
+  repository.
+
+## 4.5.1
+
+* Add note on Apple sign in requirement in README.
+
+## 4.5.0
+
+* Add support for getting `serverAuthCode`.
+
+## 4.4.6
+
+* Update lower bound of dart dependency to 2.1.0.
+
+## 4.4.5
+
+* Fix requestScopes to allow subsequent calls on Android.
+
+## 4.4.4
+
+* OCMock module import -> #import, unit tests compile generated as library.
+* Fix CocoaPods podspec lint warnings.
+
+## 4.4.3
+
+* Upgrade google_sign_in_web to version ^0.9.1
+
+## 4.4.2
+
+* Android: make the Delegate non-final to allow overriding.
+
+## 4.4.1
+
+* Android: Move `GoogleSignInWrapper` to a separate class.
+
+## 4.4.0
+
+* Migrate to Android v2 embedder.
+
+## 4.3.0
+
+* Add support for method introduced in `google_sign_in_platform_interface` 1.1.0.
+
+## 4.2.0
+
+* Migrate to AndroidX.
+
+## 4.1.5
+
+* Remove unused variable.
+
+## 4.1.4
+
+* Make the pedantic dev_dependency explicit.
+
+## 4.1.3
+
+* Make plugin example meet naming convention.
+
+## 4.1.2
+
+* Added a new error code `network_error`, and return it when a network error occurred.
+
+## 4.1.1
+
+* Support passing `clientId` to the web plugin programmatically.
+
+## 4.1.0
+
+* Support web by default.
+* Require Flutter SDK `v1.12.13+hotfix.4` or greater.
+
+## 4.0.17
+
+* Add missing documentation and fix an unawaited future in the example app.
+
+## 4.0.16
+
+* Remove the deprecated `author:` field from pubspec.yaml
+* Migrate the plugin to the pubspec platforms manifest.
+* Require Flutter SDK 1.10.0 or greater.
+
+## 4.0.15
+
+* Export SignInOption from interface since it is used in the frontend as a type.
+
 ## 4.0.14
 
 * Port plugin code to use the federated Platform Interface, instead of a MethodChannel directly.
@@ -47,8 +152,8 @@
 
 ## 4.0.3
 
-* Update guava to `27.0.1-android`.	
-* Add correct @NonNull annotations to reduce compiler warnings.	
+* Update guava to `27.0.1-android`.
+* Add correct @NonNull annotations to reduce compiler warnings.
 
 ## 4.0.2
 

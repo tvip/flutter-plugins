@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter/foundation.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 import 'package:flutter/services.dart' show PlatformException;
 
 void main() {
   final MockUrlLauncher mock = MockUrlLauncher();
-  when(mock.isMock).thenReturn(true);
   UrlLauncherPlatform.instance = mock;
 
   test('closeWebView default behavior', () async {
@@ -205,7 +207,24 @@ void main() {
       await launchResult;
       expect(binding.renderView.automaticSystemUiAdjustment, isTrue);
     });
+
+    test('sets automaticSystemUiAdjustment to not be null', () async {
+      final TestWidgetsFlutterBinding binding =
+          TestWidgetsFlutterBinding.ensureInitialized();
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      expect(binding.renderView.automaticSystemUiAdjustment, true);
+      final Future<bool> launchResult =
+          launch('http://flutter.dev/', statusBarBrightness: Brightness.dark);
+
+      // The automaticSystemUiAdjustment should be set before the launch
+      // and equal to true after the launch result is complete.
+      expect(binding.renderView.automaticSystemUiAdjustment, true);
+      await launchResult;
+      expect(binding.renderView.automaticSystemUiAdjustment, true);
+    });
   });
 }
 
-class MockUrlLauncher extends Mock implements UrlLauncherPlatform {}
+class MockUrlLauncher extends Mock
+    with MockPlatformInterfaceMixin
+    implements UrlLauncherPlatform {}

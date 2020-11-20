@@ -40,9 +40,32 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
       case 'onPageFinished':
         _platformCallbacksHandler.onPageFinished(call.arguments['url']);
         return null;
+      case 'onPageStarted':
+        _platformCallbacksHandler.onPageStarted(call.arguments['url']);
+        return null;
+      case 'onWebResourceError':
+        _platformCallbacksHandler.onWebResourceError(
+          WebResourceError(
+            errorCode: call.arguments['errorCode'],
+            description: call.arguments['description'],
+            domain: call.arguments['domain'],
+            failingUrl: call.arguments['failingUrl'],
+            errorType: call.arguments['errorType'] == null
+                ? null
+                : WebResourceErrorType.values.firstWhere(
+                    (WebResourceErrorType type) {
+                      return type.toString() ==
+                          '$WebResourceErrorType.${call.arguments['errorType']}';
+                    },
+                  ),
+          ),
+        );
+        return null;
     }
+
     throw MissingPluginException(
-        '${call.method} was invoked but has no handler');
+      '${call.method} was invoked but has no handler',
+    );
   }
 
   @override
@@ -108,6 +131,28 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
   @override
   Future<String> getTitle() => _channel.invokeMethod<String>("getTitle");
 
+  @override
+  Future<void> scrollTo(int x, int y) {
+    return _channel.invokeMethod<void>('scrollTo', <String, int>{
+      'x': x,
+      'y': y,
+    });
+  }
+
+  @override
+  Future<void> scrollBy(int x, int y) {
+    return _channel.invokeMethod<void>('scrollBy', <String, int>{
+      'x': x,
+      'y': y,
+    });
+  }
+
+  @override
+  Future<int> getScrollX() => _channel.invokeMethod<int>("getScrollX");
+
+  @override
+  Future<int> getScrollY() => _channel.invokeMethod<int>("getScrollY");
+
   /// Method channel implementation for [WebViewPlatform.clearCookies].
   static Future<bool> clearCookies() {
     return _cookieManagerChannel
@@ -134,6 +179,8 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
     _addIfNonNull('jsMode', settings.javascriptMode?.index);
     _addIfNonNull('hasNavigationDelegate', settings.hasNavigationDelegate);
     _addIfNonNull('debuggingEnabled', settings.debuggingEnabled);
+    _addIfNonNull(
+        'gestureNavigationEnabled', settings.gestureNavigationEnabled);
     _addSettingIfPresent('userAgent', settings.userAgent);
     return map;
   }

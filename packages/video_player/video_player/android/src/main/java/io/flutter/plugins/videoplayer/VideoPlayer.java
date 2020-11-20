@@ -9,29 +9,28 @@ import android.os.Build;
 import android.view.Surface;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.EventListener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioAttributes;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.Util;
 import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.view.TextureRegistry;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,38 +56,62 @@ final class VideoPlayer {
 
   private boolean isInitialized = false;
 
+  private final VideoPlayerOptions options;
+
   VideoPlayer(
       Context context,
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
       String dataSource,
-      Result result,
-      String formatHint) {
+      Map httpHeaders,
+      String formatHint,
+      VideoPlayerOptions options) {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
+    this.options = options;
 
-    TrackSelector trackSelector = new DefaultTrackSelector();
-    exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
+    exoPlayer = new SimpleExoPlayer.Builder(context).build();
 
     Uri uri = Uri.parse(dataSource);
 
     DataSource.Factory dataSourceFactory;
     if (isHTTP(uri)) {
-      dataSourceFactory =
+
+      String userAgentValue = null;
+
+      if (httpHeaders != null) {
+        for (Object key : httpHeaders.keySet()) {
+          if (((String) key).toLowerCase().equals("user-agent")) {
+            userAgentValue = (String) httpHeaders.get(key);
+          }
+        }
+      }
+
+      DefaultHttpDataSourceFactory httpDataSourceFactory =
           new DefaultHttpDataSourceFactory(
-              "ExoPlayer",
+              userAgentValue == null ? "ExoPlayer" : userAgentValue,
               null,
               DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
               DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
               true);
+
+      dataSourceFactory = httpDataSourceFactory;
+      if (httpHeaders != null) {
+        HttpDataSource.RequestProperties requestProperties = httpDataSourceFactory.getDefaultRequestProperties();
+
+        for (Object key : httpHeaders.keySet()) {
+          requestProperties.set((String) key, (String) httpHeaders.get(key));
+        }
+      }
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
     }
 
     MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
-    exoPlayer.prepare(mediaSource);
+    exoPlayer.setMediaSource(mediaSource);
+    exoPlayer.prepare();
 
-    setupVideoPlayer(eventChannel, textureEntry, result);
+    setupVideoPlayer(eventChannel, textureEntry);
   }
 
   private static boolean isHTTP(Uri uri) {
@@ -128,18 +151,18 @@ final class VideoPlayer {
         return new SsMediaSource.Factory(
                 new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
                 new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
-            .createMediaSource(uri);
+            .createMediaSource(MediaItem.fromUri(uri));
       case C.TYPE_DASH:
         return new DashMediaSource.Factory(
                 new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                 new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
-            .createMediaSource(uri);
+            .createMediaSource(MediaItem.fromUri(uri));
       case C.TYPE_HLS:
-        return new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri);
+        return new HlsMediaSource.Factory(mediaDataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(uri));
       case C.TYPE_OTHER:
-        return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-            .setExtractorsFactory(new DefaultExtractorsFactory())
-            .createMediaSource(uri);
+        return new ProgressiveMediaSource.Factory(mediaDataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(uri));
       default:
         {
           throw new IllegalStateException("Unsupported type: " + type);
@@ -148,7 +171,7 @@ final class VideoPlayer {
   }
 
   private void setupVideoPlayer(
-      EventChannel eventChannel, TextureRegistry.SurfaceTextureEntry textureEntry, Result result) {
+      EventChannel eventChannel, TextureRegistry.SurfaceTextureEntry textureEntry) {
 
     eventChannel.setStreamHandler(
         new EventChannel.StreamHandler() {
@@ -165,13 +188,13 @@ final class VideoPlayer {
 
     surface = new Surface(textureEntry.surfaceTexture());
     exoPlayer.setVideoSurface(surface);
-    setAudioAttributes(exoPlayer);
+    setAudioAttributes(exoPlayer, options.mixWithOthers);
 
     exoPlayer.addListener(
         new EventListener() {
 
           @Override
-          public void onPlayerStateChanged(final boolean playWhenReady, final int playbackState) {
+          public void onPlaybackStateChanged(final int playbackState) {
             if (playbackState == Player.STATE_BUFFERING) {
               sendBufferingUpdate();
             } else if (playbackState == Player.STATE_READY) {
@@ -193,10 +216,6 @@ final class VideoPlayer {
             }
           }
         });
-
-    Map<String, Object> reply = new HashMap<>();
-    reply.put("textureId", textureEntry.id());
-    result.success(reply);
   }
 
   void sendBufferingUpdate() {
@@ -209,10 +228,10 @@ final class VideoPlayer {
   }
 
   @SuppressWarnings("deprecation")
-  private static void setAudioAttributes(SimpleExoPlayer exoPlayer) {
+  private static void setAudioAttributes(SimpleExoPlayer exoPlayer, boolean isMixMode) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       exoPlayer.setAudioAttributes(
-          new AudioAttributes.Builder().setContentType(C.CONTENT_TYPE_MOVIE).build());
+          new AudioAttributes.Builder().setContentType(C.CONTENT_TYPE_MOVIE).build(), !isMixMode);
     } else {
       exoPlayer.setAudioStreamType(C.STREAM_TYPE_MUSIC);
     }
@@ -235,12 +254,45 @@ final class VideoPlayer {
     exoPlayer.setVolume(bracketedValue);
   }
 
+  void setPlaybackSpeed(double value) {
+    // We do not need to consider pitch and skipSilence for now as we do not handle them and
+    // therefore never diverge from the default values.
+    final PlaybackParameters playbackParameters = new PlaybackParameters(((float) value));
+
+    exoPlayer.setPlaybackParameters(playbackParameters);
+  }
+
   void seekTo(int location) {
     exoPlayer.seekTo(location);
   }
 
   long getPosition() {
     return exoPlayer.getCurrentPosition();
+  }
+
+  long getAbsolutePosition() {
+    Timeline timeline = exoPlayer.getCurrentTimeline();
+    if (!timeline.isEmpty()) {
+      long windowStartTimeMs = timeline.getWindow(0, new Timeline.Window()).windowStartTimeMs;
+      long pos = exoPlayer.getCurrentPosition();
+      return (windowStartTimeMs + pos);
+    }
+    return exoPlayer.getCurrentPosition();
+  }
+
+  double getDisplayAspectRatio(Format videoFormat) {
+    double aspectRatio = 1.0;
+
+    if (videoFormat == null) return aspectRatio;
+
+    aspectRatio = videoFormat.pixelWidthHeightRatio;
+    int width = videoFormat.width;
+    int height = videoFormat.height;
+    if (height != 0 && width != 0) {
+      aspectRatio *= (double) width / height;
+    }
+
+    return aspectRatio;
   }
 
   @SuppressWarnings("SuspiciousNameCombination")
@@ -262,6 +314,7 @@ final class VideoPlayer {
         }
         event.put("width", width);
         event.put("height", height);
+        event.put("aspectRatio", getDisplayAspectRatio(exoPlayer.getVideoFormat()));
       }
       eventSink.success(event);
     }

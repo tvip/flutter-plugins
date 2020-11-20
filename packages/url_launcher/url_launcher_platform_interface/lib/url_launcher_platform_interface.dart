@@ -4,7 +4,9 @@
 
 import 'dart:async';
 
-import 'package:meta/meta.dart' show required, visibleForTesting;
+import 'package:meta/meta.dart' show required;
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:url_launcher_platform_interface/link.dart';
 
 import 'method_channel_url_launcher.dart';
 
@@ -15,14 +17,11 @@ import 'method_channel_url_launcher.dart';
 /// (using `extends`) ensures that the subclass will get the default implementation, while
 /// platform implementations that `implements` this interface will be broken by newly added
 /// [UrlLauncherPlatform] methods.
-abstract class UrlLauncherPlatform {
-  /// Only mock implementations should set this to true.
-  ///
-  /// Mockito mocks are implementing this class with `implements` which is forbidden for anything
-  /// other than mocks (see class docs). This property provides a backdoor for mockito mocks to
-  /// skip the verification that the class isn't implemented with `implements`.
-  @visibleForTesting
-  bool get isMock => false;
+abstract class UrlLauncherPlatform extends PlatformInterface {
+  /// Constructs a UrlLauncherPlatform.
+  UrlLauncherPlatform() : super(token: _token);
+
+  static final Object _token = Object();
 
   static UrlLauncherPlatform _instance = MethodChannelUrlLauncher();
 
@@ -36,16 +35,12 @@ abstract class UrlLauncherPlatform {
   // TODO(amirh): Extract common platform interface logic.
   // https://github.com/flutter/flutter/issues/43368
   static set instance(UrlLauncherPlatform instance) {
-    if (!instance.isMock) {
-      try {
-        instance._verifyProvidesDefaultImplementations();
-      } on NoSuchMethodError catch (_) {
-        throw AssertionError(
-            'Platform interfaces must not be implemented with `implements`');
-      }
-    }
+    PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
+
+  /// The delegate used by the Link widget to build itself.
+  LinkDelegate get linkDelegate;
 
   /// Returns `true` if this platform is able to launch [url].
   Future<bool> canLaunch(String url) {
@@ -64,6 +59,7 @@ abstract class UrlLauncherPlatform {
     @required bool enableDomStorage,
     @required bool universalLinksOnly,
     @required Map<String, String> headers,
+    String webOnlyWindowName,
   }) {
     throw UnimplementedError('launch() has not been implemented.');
   }
@@ -72,12 +68,4 @@ abstract class UrlLauncherPlatform {
   Future<void> closeWebView() {
     throw UnimplementedError('closeWebView() has not been implemented.');
   }
-
-  // This method makes sure that UrlLauncher isn't implemented with `implements`.
-  //
-  // See class doc for more details on why implementing this class is forbidden.
-  //
-  // This private method is called by the instance setter, which fails if the class is
-  // implemented with `implements`.
-  void _verifyProvidesDefaultImplementations() {}
 }
