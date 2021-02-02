@@ -61,6 +61,9 @@ repo](https://github.com/flutter/flutter/issues/new/choose).
 Issues pertaining to this repository are [labeled
 "package"](https://github.com/flutter/flutter/issues?q=is%3Aopen+is%3Aissue+label%3Apackage).
 
+Issues pertaining to this repository are [labeled
+"plugin"](https://github.com/flutter/flutter/issues?q=is%3Aopen+is%3Aissue+label%3Aplugin).
+
 ## Contributing
 
 If you wish to contribute a new package to the Flutter ecosystem, please
