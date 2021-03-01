@@ -59,6 +59,26 @@ The `VideoPlayerOptions.mixWithOthers` option can't be implemented in web, at le
   please refer [here](https://google.github.io/ExoPlayer/supported-formats.html) for list of supported formats.
 - On Web, available formats depend on your users' browsers (vendor and version). Check [package:video_player_web](https://pub.dev/packages/video_player_web) for more specific information.
 
+## Using HTTP headers from the fork
+
+To pass HTTP headers before this feature is merged into flutter/plugins and new version is published on pub.dev, depend on the fork from git:
+```yaml
+dependencies:
+  ...
+  video_player:
+    git:
+      url: https://github.com/PiN73/plugins.git
+      ref: video_player-v2.0.0-http_headers
+      path: packages/video_player/video_player
+
+dependency_overrides:
+  video_player_platform_interface:
+    git:
+      url: https://github.com/PiN73/plugins.git
+      ref: video_player-v2.0.0-http_headers
+      path: packages/video_player/video_player_platform_interface
+```
+
 ## Example
 
 ```dart
