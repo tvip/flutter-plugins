@@ -22,7 +22,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 16
@@ -30,5 +30,10 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage'
+    }
+
+    dependencies {
+        implementation 'androidx.annotation:annotation:1.0.0'
+        implementation 'androidx.webkit:webkit:1.0.0'
     }
 }

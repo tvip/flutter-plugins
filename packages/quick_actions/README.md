@@ -17,6 +17,7 @@ callback, which will then be called whenever the user launches the app via a
 quick action.
 
 ```dart
+final QuickActions quickActions = const QuickActions();
 quickActions.initialize((shortcutType) {
   if (shortcutType == 'action_main') {
     print('The user tapped on the "Main view" action.');
@@ -29,8 +30,8 @@ Finally, manage the app's quick actions, for instance:
 
 ```dart
 quickActions.setShortcutItems(<ShortcutItem>[
-  quickActions.ShortcutItem(type: 'action_main', localizedTitle: 'Main view', icon: 'icon_main'),
-  quickActions.ShortcutItem(type: 'action_help', localizedTitle: 'Help', icon: 'icon_help')
+  const ShortcutItem(type: 'action_main', localizedTitle: 'Main view', icon: 'icon_main'),
+  const ShortcutItem(type: 'action_help', localizedTitle: 'Help', icon: 'icon_help')
 ]);
 ```
 
@@ -42,6 +43,6 @@ quick action.
 ## Getting Started
 
 For help getting started with Flutter, view our online
-[documentation](http://flutter.io/).
+[documentation](https://flutter.dev/).
 
-For help on editing plugin code, view the [documentation](https://flutter.io/platform-plugins/#edit-code).
+For help on editing plugin code, view the [documentation](https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin).

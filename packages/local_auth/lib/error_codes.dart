@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Exception codes for `PlatformException` returned by
-// `authenticateWithBiometrics`.
+// `authenticate`.
 
 /// Indicates that the user has not yet configured a passcode (iOS) or
 /// PIN/pattern/password (Android) on the device.
@@ -17,3 +17,10 @@ const String notAvailable = 'NotAvailable';
 
 /// Indicates the device operating system is not iOS or Android.
 const String otherOperatingSystem = 'OtherOperatingSystem';
+
+/// Indicates the API lock out due to too many attempts.
+const String lockedOut = 'LockedOut';
+
+/// Indicates the API being disabled due to too many lock outs.
+/// Strong authentication like PIN/Pattern/Password is required to unlock.
+const String permanentlyLockedOut = 'PermanentlyLockedOut';

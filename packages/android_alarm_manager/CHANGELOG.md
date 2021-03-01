@@ -1,4 +1,187 @@
+##  2.0.0
+
+* Migrate to null safety.
+
+## 0.4.5+20
+
+* Update the example app: remove the deprecated `RaisedButton` and `FlatButton` widgets.
+
+## 0.4.5+19
+
+* Fix outdated links across a number of markdown files ([#3276](https://github.com/flutter/plugins/pull/3276))
+
+## 0.4.5+18
+
+* Update Flutter SDK constraint.
+
+## 0.4.5+17
+
+* Update Dart SDK constraint in example.
+
+## 0.4.5+16
+
+* Remove unnecessary workaround from test.
+
+## 0.4.5+15
+
+* Update android compileSdkVersion to 29.
+
+## 0.4.5+14
+
+* Keep handling deprecated Android v1 classes for backward compatibility.
+
+## 0.4.5+13
+
+* Android Code Inspection and Clean up.
+
+## 0.4.5+12
+
+* Update package:e2e reference to use the local version in the flutter/plugins
+  repository.
+
+## 0.4.5+11
+
+* Update lower bound of dart dependency to 2.1.0.
+
+## 0.4.5+10
+
+* Declare API stability and compatibility with `1.0.0` (more details at: https://github.com/flutter/flutter/wiki/Package-migration-to-1.0.0).
+
+## 0.4.5+9
+
+* Fix CocoaPods podspec lint warnings.
+
+## 0.4.5+8
+
+* Remove `MainActivity` references in android example app and tests.
+
+## 0.4.5+7
+
+* Update minimum Flutter version to 1.12.13+hotfix.5
+* Clean up various Android workarounds no longer needed after framework v1.12.
+* Complete v2 embedding support.
+
+## 0.4.5+6
+
+* Replace deprecated `getFlutterEngine` call on Android.
+
+## 0.4.5+5
+
+* Added an Espresso test.
+
+## 0.4.5+4
+
+* Make the pedantic dev_dependency explicit.
+
+## 0.4.5+3
+
+* Fixed issue where callback lookup would fail while running in the background.
+
+## 0.4.5+2
+
+* Remove the deprecated `author:` field from pubspec.yaml
+* Migrate the plugin to the pubspec platforms manifest.
+* Require Flutter SDK 1.10.0 or greater.
+
+## 0.4.5+1
+
+* Loosen Flutter version restriction to 1.9.1. **NOTE: plugin registration
+  for the background isolate will not work correctly for applications using the
+  V2 Flutter Android embedding for Flutter versions lower than 1.12.**
+
+## 0.4.5
+
+* Add support for Flutter Android embedding V2
+
+## 0.4.4+3
+
+* Add unit tests and DartDocs.
+
+## 0.4.4+2
+
+* Remove AndroidX warning.
+
+## 0.4.4+1
+
+* Update and migrate iOS example project.
+* Define clang module for iOS.
+
+## 0.4.4
+
+* Add `id` to `callback` if it is of type `Function(int)`
+
+## 0.4.3
+
+* Added `oneShotAt` method to run `callback` at a given DateTime `time`.
+
+## 0.4.2
+
+* Added support for setting alarms which work when the phone is in doze mode.
+
+## 0.4.1+8
+
+* Remove dependency on google-services in the Android example.
+
+## 0.4.1+7
+
+* Fix possible crash on Android devices with APIs below 19.
+
+## 0.4.1+6
+
+* Bump the minimum Flutter version to 1.2.0.
+* Add template type parameter to `invokeMethod` calls.
+
+## 0.4.1+5
+
+* Update AlarmService to throw a `PluginRegistrantException` if
+  `AlarmService.setPluginRegistrant` has not been called to set a
+  PluginRegistrantCallback. This improves the error message seen when the
+  `AlarmService.setPluginRegistrant` call is omitted.
+
+## 0.4.1+4
+
+* Updated example to remove dependency on Firebase.
+
+## 0.4.1+3
+
+* Update README.md to include instructions for setting the WAKE_LOCK permission.
+* Updated example application to use the WAKE_LOCK permission.
+
+## 0.4.1+2
+
+* Include a missing API dependency.
+
+## 0.4.1+1
+
+* Log a more detailed warning at build time about the previous AndroidX
+  migration.
+
+## 0.4.1
+* Added support for setting alarms which persist across reboots.
+  * Both `AndroidAlarmManager.oneShot` and `AndroidAlarmManager.periodic` have
+    an optional `rescheduleOnReboot` parameter which specifies whether the new
+    alarm should be rescheduled to run after a reboot (default: false). If set
+    to false, the alarm will not survive a device reboot.
+  * Requires AndroidManifest.xml to be updated to include the following
+    entries:
+
+    ```xml
+    <!--Within the application tag body-->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!--Within the manifest tag body-->
+    <receiver
+        android:name="io.flutter.plugins.androidalarmmanager.RebootBroadcastReceiver"
+        android:enabled="false">
+        <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED"></action>
+        </intent-filter>
+    </receiver>
+
+    ```
+
 ## 0.4.0
+
 * **Breaking change**. Migrated the underlying AlarmService to utilize a
   BroadcastReceiver with a JobIntentService instead of a Service to handle
   processing of alarms. This requires AndroidManifest.xml to be updated to
