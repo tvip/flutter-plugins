@@ -125,8 +125,10 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
       [self shareText:shareText
                  subject:shareSubject
           withController:[UIApplication sharedApplication].keyWindow.rootViewController
-                atSource:originRect];
-      result(nil);
+                atSource:originRect
+           completion:^(BOOL completed) {
+        result(@(completed));
+      }];
     } else if ([@"shareFiles" isEqualToString:call.method]) {
       NSArray *paths = arguments[@"paths"];
       NSArray *mimeTypes = arguments[@"mimeTypes"];
@@ -154,8 +156,10 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
              withSubject:subject
                 withText:text
           withController:[UIApplication sharedApplication].keyWindow.rootViewController
-                atSource:originRect];
-      result(nil);
+                atSource:originRect
+            completion:^(BOOL completed) {
+         result(@(completed));
+       }];
     } else {
       result(FlutterMethodNotImplemented);
     }
@@ -164,11 +168,35 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
 
 + (void)share:(NSArray *)shareItems
     withController:(UIViewController *)controller
-          atSource:(CGRect)origin {
+          atSource:(CGRect)origin
+   completion:(void (^ __nullable)(BOOL completed))completion {
   UIActivityViewController *activityViewController =
       [[UIActivityViewController alloc] initWithActivityItems:shareItems applicationActivities:nil];
   activityViewController.popoverPresentationController.sourceView = controller.view;
   activityViewController.popoverPresentationController.sourceRect = origin;
+    activityViewController.completionWithItemsHandler = ^(NSString *activityType,
+                                                          BOOL completed,
+                                                          NSArray *returnedItems,
+                                                          NSError *error){
+                    // react to the completion
+                    if (completed) {
+                        
+                        // user shared an item
+                        NSLog(@"We used activity type%@", activityType);
+                        completion(YES);
+                        
+                    } else {
+                        
+                        // user cancelled
+                        NSLog(@"We didn't want to share anything after all.");
+                    }
+                    
+                    if (error) {
+                        NSLog(@"An Error occured: %@, %@", error.localizedDescription, error.localizedFailureReason);
+                    }
+        
+                    completion(NO);
+                };
 
   [controller presentViewController:activityViewController animated:YES completion:nil];
 }
@@ -176,9 +204,10 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
 + (void)shareText:(NSString *)shareText
            subject:(NSString *)subject
     withController:(UIViewController *)controller
-          atSource:(CGRect)origin {
+          atSource:(CGRect)origin
+       completion:(void (^ __nullable)(BOOL completed))completion {
   ShareData *data = [[ShareData alloc] initWithSubject:subject text:shareText];
-  [self share:@[ data ] withController:controller atSource:origin];
+    [self share:@[ data ] withController:controller atSource:origin completion:completion];
 }
 
 + (void)shareFiles:(NSArray *)paths
@@ -186,7 +215,8 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
        withSubject:(NSString *)subject
           withText:(NSString *)text
     withController:(UIViewController *)controller
-          atSource:(CGRect)origin {
+          atSource:(CGRect)origin
+        completion:(void (^ __nullable)(BOOL completed))completion {
   NSMutableArray *items = [[NSMutableArray alloc] init];
 
   if (text || subject) {
@@ -210,7 +240,7 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
     }
   }
 
-  [self share:items withController:controller atSource:origin];
+  [self share:items withController:controller atSource:origin completion: completion];
 }
 
 @end

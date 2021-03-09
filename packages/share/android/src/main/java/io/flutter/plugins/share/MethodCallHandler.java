@@ -4,8 +4,13 @@
 
 package io.flutter.plugins.share;
 
+import android.content.Intent;
+
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
+
 import java.io.*;
 import java.util.List;
 import java.util.Map;
@@ -14,13 +19,29 @@ import java.util.Map;
 class MethodCallHandler implements MethodChannel.MethodCallHandler {
 
   private Share share;
+  private ActivityPluginBinding binding;
+  private MethodChannel.Result result;
 
   MethodCallHandler(Share share) {
     this.share = share;
   }
 
+  public void setBinding(ActivityPluginBinding binding) {
+    this.binding = binding;
+    binding.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
+      @Override
+      public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 343 && result != null) {
+          result.success(true);
+        }
+        return false;
+      }
+    });
+  }
+
   @Override
-  public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+  public void onMethodCall(MethodCall call, final MethodChannel.Result result) {
+    this.result = result;
     switch (call.method) {
       case "share":
         expectMapArguments(call);
@@ -28,7 +49,6 @@ class MethodCallHandler implements MethodChannel.MethodCallHandler {
         String text = call.argument("text");
         String subject = call.argument("subject");
         share.share(text, subject);
-        result.success(null);
         break;
       case "shareFiles":
         expectMapArguments(call);
@@ -40,7 +60,6 @@ class MethodCallHandler implements MethodChannel.MethodCallHandler {
         // Android does not support showing the share sheet at a particular point on screen.
         try {
           share.shareFiles(paths, mimeTypes, text, subject);
-          result.success(null);
         } catch (IOException e) {
           result.error(e.getMessage(), null, null);
         }

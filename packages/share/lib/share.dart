@@ -31,7 +31,7 @@ class Share {
   ///
   /// May throw [PlatformException] or [FormatException]
   /// from [MethodChannel].
-  static Future<void> share(
+  static Future<bool> share(
     String text, {
     String subject,
     Rect sharePositionOrigin,
@@ -50,7 +50,7 @@ class Share {
       params['originHeight'] = sharePositionOrigin.height;
     }
 
-    return channel.invokeMethod<void>('share', params);
+    return channel.invokeMethod<bool>('share', params);
   }
 
   /// Summons the platform's share sheet to share multiple files.
@@ -65,7 +65,7 @@ class Share {
   ///
   /// May throw [PlatformException] or [FormatException]
   /// from [MethodChannel].
-  static Future<void> shareFiles(
+  static Future<bool> shareFiles(
     List<String> paths, {
     List<String> mimeTypes,
     String subject,
@@ -91,7 +91,7 @@ class Share {
       params['originHeight'] = sharePositionOrigin.height;
     }
 
-    return channel.invokeMethod('shareFiles', params);
+    return channel.invokeMethod<bool>('shareFiles', params);
   }
 
   static String _mimeTypeForPath(String path) {

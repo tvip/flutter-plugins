@@ -107,7 +107,7 @@ class Share {
 
   private void startActivity(Intent intent) {
     if (activity != null) {
-      activity.startActivity(intent);
+      activity.startActivityForResult(intent, 343);
     } else if (context != null) {
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       context.startActivity(intent);

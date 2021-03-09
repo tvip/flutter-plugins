@@ -6,11 +6,14 @@ package io.flutter.plugins.share;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
 
 /** Plugin method host for presenting a share sheet via Intent */
 public class SharePlugin implements FlutterPlugin, ActivityAware {
@@ -41,6 +44,7 @@ public class SharePlugin implements FlutterPlugin, ActivityAware {
   @Override
   public void onAttachedToActivity(ActivityPluginBinding binding) {
     share.setActivity(binding.getActivity());
+    handler.setBinding(binding);
   }
 
   @Override
