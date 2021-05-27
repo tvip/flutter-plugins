@@ -698,6 +698,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
+
+  void setMixWithOthers(bool mixWithOthers) {
+    _videoPlayerPlatform.setMixWithOthers(mixWithOthers);
+  }
 }
 
 class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
