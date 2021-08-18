@@ -30,6 +30,7 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage'
+        disable 'GradleDependency'
     }
     dependencies {
         api 'com.google.firebase:firebase-perf:15.0.0'
