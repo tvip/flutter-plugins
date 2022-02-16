@@ -4,6 +4,8 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'package:flutter/foundation.dart';
+
 /// Metadata used along the camera description
 /// to store additional web-specific camera details.
 @immutable

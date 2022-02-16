@@ -6,6 +6,8 @@ import 'dart:html' as html;
 
 import 'package:flutter/foundation.dart';
 
+import 'package:flutter/foundation.dart';
+
 /// The possible range of values for the zoom level configurable
 /// on the camera video track.
 @immutable
