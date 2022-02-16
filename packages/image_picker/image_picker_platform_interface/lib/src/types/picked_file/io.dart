@@ -15,6 +15,8 @@ class PickedFile extends PickedFileBase {
 
   final File _file;
 
+  final File _file;
+
   @override
   String get path {
     return _file.path;
