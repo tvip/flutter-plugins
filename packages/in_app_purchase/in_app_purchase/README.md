@@ -9,6 +9,10 @@ which can be the App Store (on iOS and macOS) or Google Play (on Android).
 |-------------|---------|-------|--------|
 | **Support** | SDK 16+ | 11.0+ | 10.15+ |
 
+|             | Android | iOS  |
+|-------------|---------|------|
+| **Support** | SDK 16+ | 9.0+ |
+
 <p>
   <img src="https://github.com/flutter/packages/blob/main/packages/in_app_purchase/in_app_purchase/doc/iap_ios.gif?raw=true"
     alt="An animated image of the iOS in-app purchase UI" height="400"/>

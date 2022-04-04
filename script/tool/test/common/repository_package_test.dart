@@ -232,6 +232,7 @@ void main() {
     test('all return false for a simple plugin', () {
       final Directory plugin = createFakePlugin('a_plugin', packagesDir);
       expect(RepositoryPackage(plugin).isFederated, false);
+      expect(RepositoryPackage(plugin).isAppFacing, false);
       expect(RepositoryPackage(plugin).isPlatformInterface, false);
       expect(RepositoryPackage(plugin).isFederated, false);
     });
@@ -240,6 +241,7 @@ void main() {
       final Directory plugin =
           createFakePlugin('a_plugin', packagesDir.childDirectory('a_plugin'));
       expect(RepositoryPackage(plugin).isFederated, true);
+      expect(RepositoryPackage(plugin).isAppFacing, true);
       expect(RepositoryPackage(plugin).isPlatformInterface, false);
       expect(RepositoryPackage(plugin).isPlatformImplementation, false);
     });
@@ -248,6 +250,7 @@ void main() {
       final Directory plugin = createFakePlugin('a_plugin_platform_interface',
           packagesDir.childDirectory('a_plugin'));
       expect(RepositoryPackage(plugin).isFederated, true);
+      expect(RepositoryPackage(plugin).isAppFacing, false);
       expect(RepositoryPackage(plugin).isPlatformInterface, true);
       expect(RepositoryPackage(plugin).isPlatformImplementation, false);
     });
@@ -258,6 +261,7 @@ void main() {
       final Directory plugin = createFakePlugin(
           'a_plugin_foo', packagesDir.childDirectory('a_plugin'));
       expect(RepositoryPackage(plugin).isFederated, true);
+      expect(RepositoryPackage(plugin).isAppFacing, false);
       expect(RepositoryPackage(plugin).isPlatformInterface, false);
       expect(RepositoryPackage(plugin).isPlatformImplementation, true);
     });
