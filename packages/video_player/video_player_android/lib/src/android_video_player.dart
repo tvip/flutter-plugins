@@ -119,6 +119,14 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<int?> getAbsolutePosition(int textureId) async {
+    final AbsolutePositionMessage response =
+        await _api.absolutePosition(TextureMessage(textureId: textureId));
+
+    return response.absolutePosition;
+  }
+
+  @override
   Stream<VideoEvent> videoEventsFor(int textureId) {
     return _eventChannelFor(textureId)
         .receiveBroadcastStream()

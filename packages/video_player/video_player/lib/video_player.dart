@@ -551,7 +551,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (_isDisposed) {
       return null;
     }
-    final int? milliseconds = await _videoPlayerPlatform.getAbsolutePosition(_textureId);
+    final int? milliseconds =
+        await _videoPlayerPlatform.getAbsolutePosition(_textureId);
 
     if (milliseconds == null || milliseconds <= 0) return null;
 

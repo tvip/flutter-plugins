@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.9
+// @dart = 2.14
 
 import 'package:pigeon/pigeon_lib.dart';
 
@@ -30,12 +30,18 @@ class PositionMessage {
   int position;
 }
 
+class AbsolutePositionMessage {
+  AbsolutePositionMessage(this.textureId, this.absolutePosition);
+  int textureId;
+  int? absolutePosition;
+}
+
 class CreateMessage {
-  String asset;
-  String uri;
-  Map<String, String> httpHeaders;
-  String packageName;
-  String formatHint;
+  String? asset;
+  String? uri;
+  Map<String?, String?> httpHeaders;
+  String? packageName;
+  String? formatHint;
 }
 
 class MixWithOthersMessage {
@@ -52,6 +58,7 @@ abstract class VideoPlayerApi {
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
   void play(TextureMessage msg);
   PositionMessage position(TextureMessage msg);
+  AbsolutePositionMessage absolutePosition(TextureMessage msg);
   void seekTo(PositionMessage msg);
   void pause(TextureMessage msg);
   void setMixWithOthers(MixWithOthersMessage msg);

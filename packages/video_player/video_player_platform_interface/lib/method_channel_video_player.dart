@@ -106,7 +106,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   @override
   Future<int?> getAbsolutePosition(int textureId) async {
     AbsolutePositionMessage response =
-    await _api.absolutePosition(TextureMessage()..textureId = textureId);
+        await _api.absolutePosition(TextureMessage()..textureId = textureId);
     return response.absolutePosition;
   }
 

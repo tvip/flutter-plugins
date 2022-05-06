@@ -288,7 +288,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
     if ([[_player currentItem] isPlaybackLikelyToKeepUp]) {
       if (!_isInitialized) {
         _isInitialized = true;
-        [self sendInitialized];
+        // [self sendInitialized];
       }
       [self updatePlayingState];
       if (_eventSink != nil) {
@@ -395,7 +395,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
     _isInitialized = YES;
     _eventSink(@{
       @"event" : @"initialized",
-      @"duration" : @(duration),
+      @"duration" : @([self duration]),
       @"width" : @(width),
       @"height" : @(height),
       @"aspectRatio" : @(dar)
@@ -662,8 +662,8 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 
 - (FLTAbsolutePositionMessage*)absolutePosition:(FLTTextureMessage*)input error:(FlutterError**)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
-  FLTAbsolutePositionMessage* result = [[FLTAbsolutePositionMessage alloc] init];
-  result.absolutePosition = @([player absolutePosition]);
+  FLTAbsolutePositionMessage *result = [FLTAbsolutePositionMessage makeWithTextureId:input.textureId
+                                                            absolutePosition:@([player absolutePosition])];
   return result;
 }
 
