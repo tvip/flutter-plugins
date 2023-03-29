@@ -69,34 +69,6 @@ class VideoPlayer {
   void initialize({
     String? src,
   }) {
-    _videoElement
-      ..autoplay = false
-      ..controls = false;
-
-    // Allows Safari iOS to play the video inline.
-    //
-    // This property is not exposed through dart:html so we use the
-    // HTML Boolean attribute form (when present with any value => true)
-    // See: https://developer.mozilla.org/en-US/docs/Glossary/Boolean/HTML
-    _videoElement.setAttribute('playsinline', true);
-
-    _videoElement.onCanPlay.listen(_onVideoElementInitialization);
-    // Needed for Safari iOS 17, which may not send `canplay`.
-    _videoElement.onLoadedMetadata.listen(_onVideoElementInitialization);
-
-    _videoElement.onCanPlayThrough.listen((dynamic _) {
-      setBuffering(false);
-    });
-
-    _videoElement.onPlaying.listen((dynamic _) {
-      setBuffering(false);
-    });
-
-    _videoElement.onWaiting.listen((dynamic _) {
-      setBuffering(true);
-      _sendBufferingRangesUpdate();
-    });
-
     // The error event fires when some form of error occurs while attempting to load or perform the media.
     _videoElement.onError.listen((html.Event _) {
       setBuffering(false);
@@ -144,19 +116,10 @@ class VideoPlayer {
   ///
   /// When called from some user interaction (a tap on a button), the above
   /// limitation should disappear.
-  Future<void> play() {
-    return _videoElement.play().catchError((Object e) {
-      // play() attempts to begin playback of the media. It returns
-      // a Promise which can get rejected in case of failure to begin
-      // playback for any reason, such as permission issues.
-      // The rejection handler is called with a DomException.
-      // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
-      final html.DomException exception = e as html.DomException;
-      _eventController.addError(PlatformException(
-        code: exception.name,
-        message: exception.message,
-      ));
-    }, test: (Object e) => e is html.DomException);
+  Future<void> play() async {
+    _videoElement.play();
+
+    Future<dynamic>.delayed(const Duration(milliseconds: 100)).then<dynamic>((dynamic _) => _videoElement.play());
   }
 
   /// Pauses the video in the current position.
@@ -257,22 +220,18 @@ class VideoPlayer {
 
   /// Disposes of the current [html.VideoElement].
   void dispose() {
-    _videoElement.removeAttribute('src');
+    _videoElement.src = '';
     if (_onContextMenu != null) {
       _videoElement.removeEventListener('contextmenu', _onContextMenu);
       _onContextMenu = null;
     }
     _videoElement.load();
+    _videoElement.pause();
+    _videoElement.currentTime = 0;
   }
 
-  // Handler to mark (and broadcast) when this player [_isInitialized].
-  //
-  // (Used as a JS event handler for "canplay" and "loadedmetadata")
-  //
-  // This function can be called multiple times by different JS Events, but it'll
-  // only broadcast an "initialized" event the first time it's called, and ignore
-  // the rest of the calls.
-  void _onVideoElementInitialization(Object? _) {
+  // ignore: public_member_api_docs
+  void setInitialized() {
     if (!_isInitialized) {
       _isInitialized = true;
       _sendInitialized();
@@ -328,10 +287,15 @@ class VideoPlayer {
   List<DurationRange> _toDurationRange(html.TimeRanges buffered) {
     final List<DurationRange> durationRange = <DurationRange>[];
     for (int i = 0; i < buffered.length; i++) {
-      durationRange.add(DurationRange(
-        Duration(milliseconds: (buffered.start(i) * 1000).round()),
-        Duration(milliseconds: (buffered.end(i) * 1000).round()),
-      ));
+      final start = buffered.start(i);
+      final end = buffered.end(i);
+
+      if (start.isFinite && end.isFinite) {
+        durationRange.add(DurationRange(
+          Duration(milliseconds: (start * 1000).round()),
+          Duration(milliseconds: (end * 1000).round()),
+        ));
+      }
     }
     return durationRange;
   }

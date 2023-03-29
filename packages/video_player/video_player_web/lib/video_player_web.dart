@@ -32,6 +32,27 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
     return _disposeAllPlayers();
   }
 
+  static VideoElement? _videoElement;
+
+  // ignore: public_member_api_docs
+  static VideoElement get videoElement {
+    if (_videoElement != null) {
+      return _videoElement!;
+    }
+
+    final VideoElement videoElement = VideoElement()
+      ..id = 'body_video_element'
+      ..autoplay = true
+      ..style.height = '100%'
+      ..style.width = '100%';
+
+    document.body!.insertBefore(videoElement, document.body!.firstChild);
+
+    _videoElement = videoElement;
+
+    return videoElement;
+  }
+
   @override
   Future<void> dispose(int textureId) async {
     _player(textureId).dispose();
@@ -73,20 +94,13 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
             'web implementation of video_player cannot play content uri'));
     }
 
-    final VideoElement videoElement = VideoElement()
-      ..id = 'videoElement-$textureId'
-      ..style.border = 'none'
-      ..style.height = '100%'
-      ..style.width = '100%';
-
-    // TODO(hterkelsen): Use initialization parameters once they are available
-    ui_web.platformViewRegistry.registerViewFactory(
-        'videoPlayer-$textureId', (int viewId) => videoElement);
-
+    final VideoElement videoElement = VideoPlayerPlugin.videoElement;
     final VideoPlayer player = VideoPlayer(videoElement: videoElement)
-      ..initialize(
-        src: uri,
-      );
+      ..initialize(src: uri);
+
+    videoElement.load();
+
+    player.setInitialized();
 
     _videoPlayers[textureId] = player;
 
