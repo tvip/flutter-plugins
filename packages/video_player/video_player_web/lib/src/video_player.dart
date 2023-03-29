@@ -190,6 +190,7 @@ class VideoPlayer {
   void dispose() {
     _videoElement.removeAttribute('src');
     _videoElement.load();
+    _videoElement.remove();
   }
 
   // Sends an [VideoEventType.initialized] [VideoEvent] with info about the wrapped video.

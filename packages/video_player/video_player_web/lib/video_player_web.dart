@@ -80,9 +80,7 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
       ..style.height = '100%'
       ..style.width = '100%';
 
-    // TODO(hterkelsen): Use initialization parameters once they are available
-    ui.platformViewRegistry.registerViewFactory(
-        'videoPlayer-$textureId', (int viewId) => videoElement);
+    document.body!.insertBefore(videoElement, document.body!.firstChild);
 
     final VideoPlayer player = VideoPlayer(videoElement: videoElement)
       ..initialize();
