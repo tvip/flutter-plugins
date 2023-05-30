@@ -2,69 +2,93 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.14
+import 'package:pigeon/pigeon.dart';
 
-import 'package:pigeon/pigeon_lib.dart';
+@ConfigurePigeon(PigeonOptions(
+  dartOut: 'lib/messages.g.dart',
+  dartTestOut: 'test/test.g.dart',
+))
 
 class TextureMessage {
+  TextureMessage(this.textureId);
+
   int textureId;
 }
 
 class LoopingMessage {
+  LoopingMessage(this.textureId, this.isLooping);
+
   int textureId;
   bool isLooping;
 }
 
 class VolumeMessage {
+  VolumeMessage(this.textureId, this.volume);
+
   int textureId;
   double volume;
 }
 
 class PlaybackSpeedMessage {
+  PlaybackSpeedMessage(this.textureId, this.speed);
+
   int textureId;
   double speed;
 }
 
 class PositionMessage {
+  PositionMessage(this.textureId, this.position);
+
   int textureId;
   int position;
 }
 
 class AbsolutePositionMessage {
-  AbsolutePositionMessage(this.textureId, this.absolutePosition);
+  AbsolutePositionMessage(this.textureId);
+
   int textureId;
   int? absolutePosition;
 }
 
 class CreateMessage {
+  CreateMessage();
+
   String? asset;
   String? uri;
-  Map<String?, String?> httpHeaders;
+  Map<String?, String?>? httpHeaders;
   String? packageName;
   String? formatHint;
 }
 
 class MixWithOthersMessage {
+  MixWithOthersMessage(this.mixWithOthers);
+
   bool mixWithOthers;
 }
 
 @HostApi(dartHostTestHandler: 'TestHostVideoPlayerApi')
 abstract class VideoPlayerApi {
   void initialize();
-  TextureMessage create(CreateMessage msg);
-  void dispose(TextureMessage msg);
-  void setLooping(LoopingMessage msg);
-  void setVolume(VolumeMessage msg);
-  void setPlaybackSpeed(PlaybackSpeedMessage msg);
-  void play(TextureMessage msg);
-  PositionMessage position(TextureMessage msg);
-  AbsolutePositionMessage absolutePosition(TextureMessage msg);
-  void seekTo(PositionMessage msg);
-  void pause(TextureMessage msg);
-  void setMixWithOthers(MixWithOthersMessage msg);
-}
 
-void configurePigeon(PigeonOptions opts) {
-  opts.dartOut = 'lib/messages.dart';
-  opts.dartTestOut = 'test/test.dart';
+  TextureMessage create(CreateMessage msg);
+
+  void dispose(TextureMessage msg);
+
+  void setLooping(LoopingMessage msg);
+
+  void setVolume(VolumeMessage msg);
+
+  void setPlaybackSpeed(PlaybackSpeedMessage msg);
+
+  void play(TextureMessage msg);
+
+  PositionMessage position(TextureMessage msg);
+
+  AbsolutePositionMessage absolutePosition(TextureMessage msg);
+
+  void seekTo(PositionMessage msg);
+
+  void pause(TextureMessage msg);
+
+  void setMixWithOthers(MixWithOthersMessage msg);
 }
