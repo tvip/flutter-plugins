@@ -700,6 +700,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
 
+  /// Sets the audio mode to mix with other sources
   void setMixWithOthers(bool mixWithOthers) {
     _videoPlayerPlatform.setMixWithOthers(mixWithOthers);
   }
