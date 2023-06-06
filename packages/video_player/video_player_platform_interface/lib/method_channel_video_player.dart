@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import 'messages.dart';
+import 'messages.g.dart';
 import 'video_player_platform_interface.dart';
 
 /// An implementation of [VideoPlayerPlatform] that uses method channels.
@@ -26,7 +25,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
 
   @override
   Future<void> dispose(int textureId) {
-    return _api.dispose(TextureMessage()..textureId = textureId);
+    return _api.dispose(TextureMessage(textureId: textureId));
   }
 
   @override
@@ -40,7 +39,6 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
         break;
       case DataSourceType.network:
         message.uri = dataSource.uri;
-        message.httpHeaders = dataSource.httpHeaders;
         message.formatHint = _videoFormatStringMap[dataSource.formatHint];
         message.httpHeaders = dataSource.httpHeaders;
         break;
@@ -58,71 +56,52 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
 
   @override
   Future<void> setLooping(int textureId, bool looping) {
-    return _api.setLooping(LoopingMessage()
-      ..textureId = textureId
-      ..isLooping = looping);
+    return _api.setLooping(LoopingMessage(textureId: textureId, isLooping: looping));
   }
 
   @override
   Future<void> play(int textureId) {
-    return _api.play(TextureMessage()..textureId = textureId);
+    return _api.play(TextureMessage(textureId: textureId));
   }
 
   @override
   Future<void> pause(int textureId) {
-    return _api.pause(TextureMessage()..textureId = textureId);
+    return _api.pause(TextureMessage(textureId: textureId));
   }
 
   @override
   Future<void> setVolume(int textureId, double volume) {
-    return _api.setVolume(VolumeMessage()
-      ..textureId = textureId
-      ..volume = volume);
+    return _api.setVolume(VolumeMessage(textureId: textureId, volume: volume));
   }
 
   @override
   Future<void> setPlaybackSpeed(int textureId, double speed) {
     assert(speed > 0);
 
-    return _api.setPlaybackSpeed(PlaybackSpeedMessage()
-      ..textureId = textureId
-      ..speed = speed);
+    return _api.setPlaybackSpeed(PlaybackSpeedMessage(textureId: textureId, speed: speed));
   }
 
   @override
   Future<void> seekTo(int textureId, Duration position) {
-    return _api.seekTo(PositionMessage()
-      ..textureId = textureId
-      ..position = position.inMilliseconds);
+    return _api.seekTo(PositionMessage(textureId: textureId, position: position.inMilliseconds));
   }
 
   @override
   Future<Duration> getPosition(int textureId) async {
-    final PositionMessage response =
-        await _api.position(TextureMessage()..textureId = textureId);
-    return Duration(milliseconds: response.position!);
-  }
-
-  @override
-  Future<int?> getAbsolutePosition(int textureId) async {
-    AbsolutePositionMessage response =
-        await _api.absolutePosition(TextureMessage()..textureId = textureId);
-    return response.absolutePosition;
+    final PositionMessage response = await _api.position(TextureMessage(textureId: textureId));
+    return Duration(milliseconds: response.position);
   }
 
   @override
   Stream<VideoEvent> videoEventsFor(int textureId) {
-    return _eventChannelFor(textureId)
-        .receiveBroadcastStream()
-        .map((dynamic event) {
+    return _eventChannelFor(textureId).receiveBroadcastStream().map((dynamic event) {
       final Map<dynamic, dynamic> map = event as Map<dynamic, dynamic>;
       switch (map['event']) {
         case 'initialized':
           return VideoEvent(
             eventType: VideoEventType.initialized,
             duration: Duration(milliseconds: map['duration']! as int),
-            size: Size((map['width'] as num?)?.toDouble() ?? 0.0,
-                (map['height'] as num?)?.toDouble() ?? 0.0),
+            size: Size((map['width'] as num?)?.toDouble() ?? 0.0, (map['height'] as num?)?.toDouble() ?? 0.0),
             rotationCorrection: map['rotationCorrection'] as int? ?? 0,
           );
         case 'completed':
@@ -154,7 +133,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   @override
   Future<void> setMixWithOthers(bool mixWithOthers) {
     return _api.setMixWithOthers(
-      MixWithOthersMessage()..mixWithOthers = mixWithOthers,
+      MixWithOthersMessage(mixWithOthers: mixWithOthers),
     );
   }
 
@@ -162,8 +141,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
     return EventChannel('flutter.io/videoPlayer/videoEvents$textureId');
   }
 
-  static const Map<VideoFormat, String> _videoFormatStringMap =
-      <VideoFormat, String>{
+  static const Map<VideoFormat, String> _videoFormatStringMap = <VideoFormat, String>{
     VideoFormat.ss: 'ss',
     VideoFormat.hls: 'hls',
     VideoFormat.dash: 'dash',

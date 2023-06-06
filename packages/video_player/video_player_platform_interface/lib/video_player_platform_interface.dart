@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -96,7 +98,7 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
 
   /// Gets the video position as milliseconds from the start.
   Future<int?> getAbsolutePosition(int textureId) {
-    throw UnimplementedError('getAbsolutePosition() has not been implemented.');
+    return Future<int?>.value(null);
   }
 
   /// Returns a widget displaying the video with a given textureID.
