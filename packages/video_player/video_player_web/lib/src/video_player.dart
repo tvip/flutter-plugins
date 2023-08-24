@@ -57,36 +57,6 @@ class VideoPlayer {
   /// and attaches listeners to the internal events from the [html.VideoElement]
   /// to react to them / expose them through the [VideoPlayer.events] stream.
   void initialize() {
-    _videoElement
-      ..autoplay = false
-      ..controls = false;
-
-    // Allows Safari iOS to play the video inline
-    _videoElement.setAttribute('playsinline', 'true');
-
-    // Set autoplay to false since most browsers won't autoplay a video unless it is muted
-    _videoElement.setAttribute('autoplay', 'false');
-
-    _videoElement.onCanPlay.listen((dynamic _) {
-      if (!_isInitialized) {
-        _isInitialized = true;
-        _sendInitialized();
-      }
-    });
-
-    _videoElement.onCanPlayThrough.listen((dynamic _) {
-      setBuffering(false);
-    });
-
-    _videoElement.onPlaying.listen((dynamic _) {
-      setBuffering(false);
-    });
-
-    _videoElement.onWaiting.listen((dynamic _) {
-      setBuffering(true);
-      _sendBufferingRangesUpdate();
-    });
-
     // The error event fires when some form of error occurs while attempting to load or perform the media.
     _videoElement.onError.listen((html.Event _) {
       setBuffering(false);
@@ -107,6 +77,14 @@ class VideoPlayer {
     });
   }
 
+  // ignore: public_member_api_docs
+  void setInitialized() {
+    if (!_isInitialized) {
+      _isInitialized = true;
+      _sendInitialized();
+    }
+  }
+
   /// Attempts to play the video.
   ///
   /// If this method is called programmatically (without user interaction), it
@@ -114,19 +92,10 @@ class VideoPlayer {
   ///
   /// When called from some user interaction (a tap on a button), the above
   /// limitation should disappear.
-  Future<void> play() {
-    return _videoElement.play().catchError((Object e) {
-      // play() attempts to begin playback of the media. It returns
-      // a Promise which can get rejected in case of failure to begin
-      // playback for any reason, such as permission issues.
-      // The rejection handler is called with a DomException.
-      // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play
-      final html.DomException exception = e as html.DomException;
-      _eventController.addError(PlatformException(
-        code: exception.name,
-        message: exception.message,
-      ));
-    }, test: (Object e) => e is html.DomException);
+  Future<void> play() async {
+    _videoElement.play();
+
+    Future<dynamic>.delayed(const Duration(milliseconds: 100)).then<dynamic>((dynamic _) => _videoElement.play());
   }
 
   /// Pauses the video in the current position.
@@ -188,21 +157,21 @@ class VideoPlayer {
 
   /// Disposes of the current [html.VideoElement].
   void dispose() {
-    _videoElement.removeAttribute('src');
+    _videoElement.src = '';
     _videoElement.load();
-    _videoElement.remove();
+    _videoElement.pause();
+    _videoElement.currentTime = 0;
   }
 
   // Sends an [VideoEventType.initialized] [VideoEvent] with info about the wrapped video.
   void _sendInitialized() {
-    final Duration? duration =
-        !_videoElement.duration.isNaN && !_videoElement.duration.isInfinite
-            ? Duration(
-                milliseconds: (_videoElement.duration * 1000).round(),
-              )
-            : null;
+    final Duration? duration = _videoElement.duration.isFinite
+        ? Duration(
+            milliseconds: (_videoElement.duration * 1000).round(),
+          )
+        : null;
 
-    final Size? size = !_videoElement.videoHeight.isNaN
+    final Size? size = _videoElement.videoHeight.isFinite
         ? Size(
             _videoElement.videoWidth.toDouble(),
             _videoElement.videoHeight.toDouble(),
@@ -246,10 +215,15 @@ class VideoPlayer {
   List<DurationRange> _toDurationRange(html.TimeRanges buffered) {
     final List<DurationRange> durationRange = <DurationRange>[];
     for (int i = 0; i < buffered.length; i++) {
-      durationRange.add(DurationRange(
-        Duration(milliseconds: (buffered.start(i) * 1000).round()),
-        Duration(milliseconds: (buffered.end(i) * 1000).round()),
-      ));
+      final start = buffered.start(i);
+      final end = buffered.end(i);
+
+      if (start.isFinite && end.isFinite) {
+        durationRange.add(DurationRange(
+          Duration(milliseconds: (start * 1000).round()),
+          Duration(milliseconds: (end * 1000).round()),
+        ));
+      }
     }
     return durationRange;
   }
